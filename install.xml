@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+    <name>LibreDTE</name>
+    <version>0.1</version>
+    <author>SASCO SpA</author>
+    <link>http://libredte.cl</link>
+    <description><![CDATA[Integración con LibreDTE para facturación electrónica en Chile]]></description>
+    <code>libredte</code>
+    <file path="catalog/controller/product/product.php">
+        <operation>
+            <search><![CDATA[
+            $data['model'] = $product_info['model'];
+            ]]></search>
+            <add position="after"><![CDATA[
+            $data['sku'] = $product_info['sku'];
+            ]]></add>
+        </operation>
+    </file>
+    <file path="catalog/view/theme/default/template/product/product.tpl">
+        <operation>
+            <search><![CDATA[
+            <li><?php echo $text_model; ?> <?php echo $model; ?></li>
+            ]]></search>
+            <add position="after"><![CDATA[
+            <li>SKU: <?php echo $sku; ?></li>
+            ]]></add>
+        </operation>
+    </file>
+</modification>
