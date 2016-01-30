@@ -26,4 +26,44 @@
             ]]></add>
         </operation>
     </file>
+    <file path="admin/controller/sale/order.php">
+        <operation>
+            <search><![CDATA[
+            $data['invoice'] = $this->url->link('sale/order/invoice', 'token=' . $this->session->data['token'] . '&order_id=' . (int)$this->request->get['order_id'], 'SSL');
+            ]]></search>
+            <add position="replace"><![CDATA[
+            $this->load->model('libredte/order');
+            $data['invoice'] = $this->url->link('libredte/order/invoice', 'token=' . $this->session->data['token'] . '&order_id=' . (int)$this->request->get['order_id'], 'SSL');
+            ]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[
+            $invoice_no = $this->model_sale_order->createInvoiceNo($order_id);
+            ]]></search>
+            <add position="replace"><![CDATA[
+            $this->load->model('libredte/order');
+            $invoice_no = $this->model_libredte_order->createInvoiceNo($order_id);
+            ]]></add>
+        </operation>
+    </file>
+    <file path="admin/view/template/common/menu.tpl">
+        <operation>
+            <search><![CDATA[
+            <li><a href="<?php echo $module; ?>"><?php echo $text_module; ?></a></li>
+            ]]></search>
+            <add position="after"><![CDATA[
+            <li><a href="<?php echo $libredte; ?>">LibreDTE</a></li>
+            ]]></add>
+        </operation>
+    </file>
+    <file path="admin/controller/common/menu.php">
+        <operation>
+            <search><![CDATA[
+            $data['module'] = $this->url->link('extension/module', 'token=' . $this->session->data['token'], 'SSL');
+            ]]></search>
+            <add position="after"><![CDATA[
+            $data['libredte'] = $this->url->link('extension/libredte', 'token=' . $this->session->data['token'], 'SSL');
+            ]]></add>
+        </operation>
+    </file>
 </modification>
