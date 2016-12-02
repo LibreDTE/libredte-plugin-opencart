@@ -33,7 +33,7 @@ class ControllerLibredteProduct extends Controller
      * Acción que permite obtener los datos de un item (producto) para poder
      * consumir desde la aplicación web de LibreDTE
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-01-23
+     * @version 2016-12-02
      */
     public function index()
     {
@@ -71,7 +71,7 @@ class ControllerLibredteProduct extends Controller
                     'IndExe' => $product_info['tax_class_id'] ? 0 : 1,
                     'UnmdItem' => substr('', 0, 4),
                     'PrcItem' => round($product_info['price']),
-                    'ValorDR' => round($product_info['price']-$product_info['special']),
+                    'ValorDR' => $product_info['special'] ? round($product_info['price']-$product_info['special']) : 0,
                     'TpoValor' => '$',
                 ];
             }

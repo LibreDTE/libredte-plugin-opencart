@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <modification>
     <name>LibreDTE</name>
-    <version>0.1</version>
+    <version>0.2</version>
+    <code>libredte-opencart-0.2</code>
     <author>SASCO SpA</author>
     <link>http://libredte.cl</link>
     <description><![CDATA[Integración con LibreDTE para facturación electrónica en Chile]]></description>
