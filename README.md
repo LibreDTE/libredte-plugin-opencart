@@ -1,7 +1,7 @@
-Extensión LibreDTE para OpenCart
-================================
+Plugin LibreDTE para OpenCart
+=============================
 
-Esta extensión permite integrar OpenCart con la aplicación web de LibreDTE.
+Este plugin permite integrar OpenCart con la aplicación web de LibreDTE.
 
 Funcionalidades implementadas:
 
