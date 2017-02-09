@@ -10,6 +10,13 @@ Funcionalidades implementadas:
 - Generación de factura (33 o 34) desde la página de orden de compra de OpenCart.
 - Acceso desde la página de la orden de compra a la página del DTE en LibreDTE.
 
+Licencia
+--------
+
+Este código está liberado bajo la licencia de software libre [AGPL](http://www.gnu.org/licenses/agpl-3.0.en.html).
+Para detalles sobre cómo se puede utilizar, modificar y/o distribuir este plugin revisar los términos de la licencia.
+También tiene detalles, en español, sobre esto en los [términos y condiciones](https://wiki.libredte.cl/doku.php/terminos) de LibreDTE.
+
 API
 ---
 
