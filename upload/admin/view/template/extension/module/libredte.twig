@@ -23,13 +23,13 @@
             <button type="button" class="close" data-dismiss="alert">&times;</button>
         </div>
 {% endif %}
-<?php if (!empty($success)) : ?>
+{% if success %}
         <div class="alert alert-success">
             <i class="fa fa-check-circle"></i>
             {{ success }}
             <button type="button" class="close" data-dismiss="alert">&times;</button>
         </div>
-<?php endif; ?>
+{% endif %}
         <ul class="nav nav-pills" style="margin-bottom:1em">
             <li role="presentation"><a href="{{ enlace_dte }}" target="_blank">Módulo facturación</a></li>
             <li role="presentation" class="dropdown">
@@ -125,6 +125,20 @@
                             <input type="text" name="libredte_cliente_giro" value="{{ libredte_cliente_giro }}" class="form-control" />
                         </div>
                     </div>
+		    <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-status">{{ entry_status }}</label>
+            <div class="col-sm-10">
+              <select name="status" id="input-status" class="form-control">
+                {% if status %}
+                <option value="1" selected="selected">{{ text_enabled }}</option>
+                <option value="0">{{ text_disabled }}</option>
+                {% else %}
+                <option value="1">{{ text_enabled }}</option>
+                <option value="0" selected="selected">{{ text_disabled }}</option>
+                {% endif %}
+              </select>
+            </div>
+          </div>
                 </form>
             </div>
         </div>
