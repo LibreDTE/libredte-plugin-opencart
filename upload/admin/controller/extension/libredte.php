@@ -50,24 +50,24 @@ class ControllerExtensionLibredte extends Controller
         $this->load->model('setting/setting');
         $this->load->language('extension/libredte');
         $this->document->setTitle($this->language->get('heading_title'));
-        $data['heading_title'] = $this->language->get('heading_title');
-        $data['button_save'] = $this->language->get('button_save');
+
         // breadcrumbs
         $data['breadcrumbs'] = array();
         $data['breadcrumbs'][] = array(
             'text' => $this->language->get('text_home'),
-            'href' => $this->url->link('common/dashboard', 'token=' . $this->session->data['token'], 'SSL')
+            'href' => $this->url->link('common/dashboard', 'user_token=' . $this->session->data['user_token'], true)
         );
         $data['breadcrumbs'][] = array(
             'text' => $this->language->get('heading_title'),
-            'href' => $this->url->link('extension/libredte', 'token=' . $this->session->data['token'], 'SSL')
+            'href' => $this->url->link('extension/libredte', 'user_token=' . $this->session->data['user_token'], true)
         );
         // token para enlaces
-        $data['token'] = $this->session->data['token'];
+        $data['user_token'] = $this->session->data['user_token'];
         // cabecera, menú y pie de página
         $data['header'] = $this->load->controller('common/header');
         $data['column_left'] = $this->load->controller('common/column_left');
         $data['footer'] = $this->load->controller('common/footer');
+		$data['error_warning'] = '';
         // si se envío el formulario se procesa
         if (!empty($this->request->post)) {
             // verificar que campos mínimos estén completos
@@ -104,6 +104,15 @@ class ControllerExtensionLibredte extends Controller
                 $libredte_info['libredte_contribuyente'], 0, ',', '.'
             ).'-'.$this->libredte->dv($libredte_info['libredte_contribuyente']);
         }
+		
+		if (empty($data['error_warning'])){
+		$data['empty_error_warning'] = true;
+		}
+		else
+		{
+		$data['empty_error_warning'] = false;	
+		}
+		
         // variables para la vista
         foreach ($libredte_info as $key => $value) {
             $data[$key] = $value;
@@ -128,14 +137,14 @@ class ControllerExtensionLibredte extends Controller
             $data['enlace_'.$key] = $this->url->link(
                 'extension/libredte/go',
                 [
-                    'token' => $this->session->data['token'],
+                    'user_token' => $this->session->data['user_token'],
                     'url' => base64_encode($enlace),
                 ],
-                'SSL'
+                true
             );
         }
         // cargar vista
-        $this->response->setOutput($this->load->view('extension/libredte.tpl', $data));
+        $this->response->setOutput($this->load->view('extension/libredte', $data));
     }
 
     /**
@@ -166,16 +175,16 @@ class ControllerExtensionLibredte extends Controller
             $data['breadcrumbs'] = array();
             $data['breadcrumbs'][] = array(
                 'text' => $this->language->get('text_home'),
-                'href' => $this->url->link('common/dashboard', 'token=' . $this->session->data['token'], 'SSL')
+                'href' => $this->url->link('common/dashboard', 'user_token=' . $this->session->data['user_token'], true)
             );
             $data['breadcrumbs'][] = array(
                 'text' => $this->language->get('heading_title'),
-                'href' => $this->url->link('error/not_found', 'token=' . $this->session->data['token'], 'SSL')
+                'href' => $this->url->link('error/not_found', 'user_token=' . $this->session->data['user_token'], true)
             );
             $data['header'] = $this->load->controller('common/header');
             $data['column_left'] = $this->load->controller('common/column_left');
             $data['footer'] = $this->load->controller('common/footer');
-            $this->response->setOutput($this->load->view('error/not_found.tpl', $data));
+            $this->response->setOutput($this->load->view('error/not_found', $data));
         }
     }
 
