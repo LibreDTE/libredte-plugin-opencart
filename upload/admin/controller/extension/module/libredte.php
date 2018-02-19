@@ -156,10 +156,13 @@ class ControllerExtensionModuleLibredte extends Controller
             $libredte_info = $this->model_setting_setting->getSetting(
                 'module_libredte', (int)$this->config->get('config_store_id')
             );
+			
+			if (!empty($libredte_info['libredte_contribuyente'])){
             $libredte_contribuyente = $libredte_info['libredte_contribuyente'];
             $libredte_info['libredte_contribuyente'] = number_format(
                 $libredte_info['libredte_contribuyente'], 0, ',', '.'
             ).'-'.$this->libredte->dv($libredte_info['libredte_contribuyente']);
+			}
         }
 		
 		if (empty($data['error_warning'])){
@@ -266,6 +269,18 @@ class ControllerExtensionModuleLibredte extends Controller
             $this->response->setOutput($this->load->view('error/not_found', $data));
         }
     }
+	
+    public function install() {
+		      $this->load->model('setting/setting');
+		$this->model_setting_setting->editSetting('module_libredte', array("module_libredte_status" => 1));
+    
+    }
+
+    public function uninstall() {
+         $this->load->model('setting/setting');
+        $this->model_setting_setting->deleteSetting('module_libredte');
+    }
+
 
 	protected function validate() {
 		if (!$this->user->hasPermission('modify', 'extension/module/libredte')) {
