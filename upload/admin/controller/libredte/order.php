@@ -52,7 +52,7 @@ class ControllerLibredteOrder extends Controller
             $url = $this->url->link(
                 'extension/libredte/go',
                 [
-                    'token' => $this->session->data['token'],
+                    'user_token' => $this->session->data['user_token'],
                     'url' => base64_encode('/dte/dte_emitidos/ver/'.$dte_tipo.'/'.$dte_folio),
                 ],
                 'SSL'
