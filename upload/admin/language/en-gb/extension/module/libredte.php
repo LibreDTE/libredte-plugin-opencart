@@ -32,3 +32,6 @@
 
 // Heading
 $_['heading_title']        = 'LibreDTE';
+$_['success']        	   = 'Exito';
+
+

@@ -205,12 +205,12 @@ class ControllerExtensionModuleLibredte extends Controller
         }
 		
 		
-		if (isset($this->request->post['status'])) {
-			$data['status'] = $this->request->post['status'];
+		if (isset($this->request->post['module_libredte_status'])) {
+			$data['module_libredte_status'] = $this->request->post['module_libredte_status'];
 		} elseif (!empty($module_info)) {
-			$data['status'] = $module_info['status'];
+			$data['module_libredte_status'] = $module_info['module_libredte_status'];
 		} else {
-			$data['status'] = '';
+			$data['module_libredte_status'] = '';
 		}
 		
 		

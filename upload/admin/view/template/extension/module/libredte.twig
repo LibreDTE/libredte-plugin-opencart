@@ -3,7 +3,7 @@
     <div class="page-header">
         <div class="container-fluid">
             <div class="pull-right">
-                <button type="submit" form="form-product" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary" onclick="formulario_submit()">
+                <button type="submit" form="formulario" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary" onclick="formulario_submit()">
                     <i class="fa fa-save"></i>
                 </button>
             </div>
@@ -78,7 +78,7 @@
                             <span data-toggle="tooltip" title="Dirección web con la ubicación de la aplicación de LibreDTE">URL LibreDTE</span>
                         </label>
                         <div class="col-sm-10">
-                            <input type="text" name="libredte_url" value="{{ libredte_url }}" class="form-control" placeholder="https://libredte.sasco.cl" />
+                            <input type="text" name="module_libredte_url" value="{{ module_libredte_url }}" class="form-control" placeholder="https://libredte.sasco.cl" />
                         </div>
                     </div>
                     <div class="form-group required">
@@ -86,7 +86,7 @@
                             <span data-toggle="tooltip" title="RUT del contribuyente asociado a esta tienda">RUT contribuyente</span>
                         </label>
                         <div class="col-sm-10">
-                            <input type="text" name="libredte_contribuyente" value="{{ libredte_contribuyente }}" class="form-control" placeholder="55.666.777-8" />
+                            <input type="text" name="module_libredte_contribuyente" value="{{ module_libredte_contribuyente }}" class="form-control" placeholder="55.666.777-8" />
                         </div>
                     </div>
                     <div class="form-group required">
@@ -94,7 +94,7 @@
                             <span data-toggle="tooltip" title="Hash del usuario en LibreDTE para preautenticación">Hash usuario</span>
                         </label>
                         <div class="col-sm-10">
-                            <input type="text" name="libredte_preauth_hash" value="{{ libredte_preauth_hash }}" id="libredte_preauth_hash" class="form-control" maxlength="32" onblur="preauth_check()" />
+                            <input type="text" name="module_libredte_preauth_hash" value="{{ module_libredte_preauth_hash }}" id="libredte_preauth_hash" class="form-control" maxlength="32" onblur="preauth_check()" />
                         </div>
                     </div>
                     <div class="form-group required">
@@ -102,9 +102,9 @@
                             <span data-toggle="tooltip" title="Campo que se usará como código del producto">Producto código</span>
                         </label>
                         <div class="col-sm-10">
-                            <select name="libredte_producto_codigo" class="form-control">
+                            <select name="module_libredte_producto_codigo" class="form-control">
 {% for codigo in producto_codigos %}
-                                <option value="{{ codigo }}"{% if codigo == libredte_producto_codigo %} selected="selected" %}{% endif %}>{{ codigo }}</option>
+                                <option value="{{ codigo }}"{% if codigo == module_libredte_producto_codigo %} selected="selected" %}{% endif %}>{{ codigo }}</option>
 {% endfor %}
                             </select>
                         </div>
@@ -114,7 +114,7 @@
                             <span data-toggle="tooltip" title="ID del campo que es el RUT del cliente">Cliente RUT</span>
                         </label>
                         <div class="col-sm-10">
-                            <input type="text" name="libredte_cliente_rut" value="{{ libredte_cliente_rut }}" class="form-control" />
+                            <input type="text" name="module_libredte_cliente_rut" value="{{ module_libredte_cliente_rut }}" class="form-control" />
                         </div>
                     </div>
                     <div class="form-group required">
@@ -122,13 +122,13 @@
                             <span data-toggle="tooltip" title="ID del campo que es el giro del cliente">Cliente giro</span>
                         </label>
                         <div class="col-sm-10">
-                            <input type="text" name="libredte_cliente_giro" value="{{ libredte_cliente_giro }}" class="form-control" />
+                            <input type="text" name="module_libredte_cliente_giro" value="{{ module_libredte_cliente_giro }}" class="form-control" />
                         </div>
                     </div>
 		    <div class="form-group">
             <label class="col-sm-2 control-label" for="input-status">{{ entry_status }}</label>
             <div class="col-sm-10">
-              <select name="status" id="input-status" class="form-control">
+              <select name="module_libredte_status" id="input-status" class="form-control">
                 {% if status %}
                 <option value="1" selected="selected">{{ text_enabled }}</option>
                 <option value="0">{{ text_disabled }}</option>

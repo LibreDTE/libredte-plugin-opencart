@@ -34,12 +34,15 @@ class ModelExtensionLibredteOrder extends Model
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
      * @version 2016-01-26
      */
+	 /*
     public function __construct($registry)
     {
         $this->registry = $registry;
         $this->registry->set('libredte', new Libredte($this->registry));
     }
-
+	*/
+	
+	
     /**
      * Método que crea la factura en LibreDTE
      * @param order_id ID de la orden que se quiere generar su factura
@@ -53,7 +56,7 @@ class ModelExtensionLibredteOrder extends Model
             return false;
         $order_info = $this->model_sale_order->getOrder($order_id);
         $libredte_info = $this->model_setting_setting->getSetting(
-            'libredte', $order_info['store_id']
+            'module_libredte', $order_info['store_id']
         );
         // emitir dte temporal
         $response = $this->libredte->post(
@@ -97,11 +100,11 @@ class ModelExtensionLibredteOrder extends Model
             return false;
         $this->load->model('setting/setting');
         $libredte_info = $this->model_setting_setting->getSetting(
-            'libredte', $order_info['store_id']
+            'module_libredte', $order_info['store_id']
         );
-        $custom_field_rut = $libredte_info['libredte_cliente_rut'];
-        $custom_field_giro = $libredte_info['libredte_cliente_giro'];
-        $product_code = $libredte_info['libredte_producto_codigo'];
+        $custom_field_rut = $libredte_info['module_libredte_cliente_rut'];
+        $custom_field_giro = $libredte_info['module_libredte_cliente_giro'];
+        $product_code = $libredte_info['module_libredte_producto_codigo'];
         if (empty($order_info['custom_field'][$custom_field_rut]) or empty($order_info['custom_field'][$custom_field_giro]))
             return false;
         if (!$this->libredte->checkRut($order_info['custom_field'][$custom_field_rut]))
@@ -143,7 +146,7 @@ class ModelExtensionLibredteOrder extends Model
                     'FchEmis' => date('Y-m-d'),
                 ],
                 'Emisor' => [
-                    'RUTEmisor' => $libredte_info['libredte_contribuyente'].'-'.$this->libredte->dv($libredte_info['libredte_contribuyente']),
+                    'RUTEmisor' => $libredte_info['module_libredte_contribuyente'].'-'.$this->libredte->dv($libredte_info['module_libredte_contribuyente']),
                 ],
                 'Receptor' => [
                     'RUTRecep' => $order_info['custom_field'][$custom_field_rut],
