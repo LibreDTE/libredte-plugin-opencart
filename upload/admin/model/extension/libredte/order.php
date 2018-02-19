@@ -26,7 +26,7 @@
  * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
  * @version 2016-01-30
  */
-class ModelLibredteOrder extends Model
+class ModelExtensionLibredteOrder extends Model
 {
 
     /**
@@ -107,11 +107,11 @@ class ModelLibredteOrder extends Model
         if (!$this->libredte->checkRut($order_info['custom_field'][$custom_field_rut]))
             return false;
         // crear arreglo con detalles de productos y/o servicios
-        $this->load->model('libredte/product');
+        $this->load->model('extension/libredte/product');
         $products = $this->model_sale_order->getOrderProducts($order_id);
         $Detalle = [];
         foreach ($products as $product) {
-            $product_info = $this->model_libredte_product->getProduct($product['product_id']);
+            $product_info = $this->model_extension_libredte_product->getProduct($product['product_id']);
             $price = $product_info['price'];
             $discount = $product_info['price'] - $product_info['special'];
             if ($product['price']!=($price-$discount)) {
