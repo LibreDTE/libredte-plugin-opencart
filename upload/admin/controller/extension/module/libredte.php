@@ -56,7 +56,7 @@ class ControllerExtensionModuleLibredte extends Controller
 		
 			if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
 			if (!isset($this->request->get['module_id'])) {
-				$this->model_setting_module->addModule('featured', $this->request->post);
+				$this->model_setting_module->addModule('libredte', $this->request->post);
 			} else {
 				$this->model_setting_module->editModule($this->request->get['module_id'], $this->request->post);
 			}
@@ -100,6 +100,24 @@ class ControllerExtensionModuleLibredte extends Controller
             'text' => $this->language->get('heading_title'),
             'href' => $this->url->link('extension/module/libredte', 'user_token=' . $this->session->data['user_token'], true)
         );
+		
+		
+		if (!isset($this->request->get['module_id'])) {
+			$data['action'] = $this->url->link('extension/module/libredte', 'user_token=' . $this->session->data['user_token'], true);
+		} else {
+			$data['action'] = $this->url->link('extension/module/libredte', 'user_token=' . $this->session->data['user_token'] . '&module_id=' . $this->request->get['module_id'], true);
+		}
+
+		$data['cancel'] = $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=module', true);
+
+		if (isset($this->request->get['module_id']) && ($this->request->server['REQUEST_METHOD'] != 'POST')) {
+			$module_info = $this->model_setting_module->getModule($this->request->get['module_id']);
+		}
+
+		
+		
+		
+		
         // token para enlaces
         $data['user_token'] = $this->session->data['user_token'];
         // cabecera, menú y pie de página
