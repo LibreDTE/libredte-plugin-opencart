@@ -56,7 +56,7 @@ class ControllerExtensionModuleLibredte extends Controller
 		
 			if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
 			if (!isset($this->request->get['module_id'])) {
-				$this->model_setting_module->addModule('libredte', $this->request->post);
+				$this->model_setting_module->addModule('module_libredte', $this->request->post);
 			} else {
 				$this->model_setting_module->editModule($this->request->get['module_id'], $this->request->post);
 			}
@@ -144,7 +144,7 @@ class ControllerExtensionModuleLibredte extends Controller
                     ]
                 );
                 $this->model_setting_setting->editSetting(
-                    'libredte', $settings, (int)$this->config->get('config_store_id')
+                    'module_libredte', $settings, (int)$this->config->get('config_store_id')
                 );
                 $data['success'] = 'Se ha guardado la configuración de la extensión';
             }
@@ -154,7 +154,7 @@ class ControllerExtensionModuleLibredte extends Controller
         // asignar configuración de la base de datos
         else {
             $libredte_info = $this->model_setting_setting->getSetting(
-                'libredte', (int)$this->config->get('config_store_id')
+                'module_libredte', (int)$this->config->get('config_store_id')
             );
             $libredte_contribuyente = $libredte_info['libredte_contribuyente'];
             $libredte_info['libredte_contribuyente'] = number_format(
@@ -225,7 +225,7 @@ class ControllerExtensionModuleLibredte extends Controller
     {
         $this->load->model('setting/setting');
         $libredte_info = $this->model_setting_setting->getSetting(
-            'libredte', (int)$this->config->get('config_store_id')
+            'module_libredte', (int)$this->config->get('config_store_id')
         );
         if (!empty($libredte_info['libredte_url']) and !empty($libredte_info['libredte_contribuyente']) and !empty($libredte_info['libredte_preauth_hash'])) {
             $url = !empty($this->request->get['url']) ? $this->request->get['url'] : base64_encode('/dte');
