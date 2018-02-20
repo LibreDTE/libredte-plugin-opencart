@@ -32,6 +32,7 @@
 
 // Heading
 $_['heading_title']        = 'LibreDTE';
-$_['success']        	   = 'Exito';
+$_['success']        	   = 'Operación Exitosa';
+$_['text_success']        = 'Se ha guardado la configuración de la extensión';
 
 

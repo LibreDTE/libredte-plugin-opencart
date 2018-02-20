@@ -28,7 +28,9 @@
  */
 class ControllerExtensionModuleLibredte extends Controller
 {
-
+	
+	 private $error = array();
+	 
     /**
      * Constructor del controlador
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
@@ -48,6 +50,9 @@ class ControllerExtensionModuleLibredte extends Controller
      */
     public function index()
     {
+		
+		
+		$this->libredte = new libredte();
         $this->load->model('setting/setting');
 		$this->load->model('setting/module');
         $this->load->language('extension/module/libredte');
@@ -55,11 +60,7 @@ class ControllerExtensionModuleLibredte extends Controller
 		
 		
 			if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
-			if (!isset($this->request->get['module_id'])) {
-				$this->model_setting_module->addModule('module_libredte', $this->request->post);
-			} else {
-				$this->model_setting_module->editModule($this->request->get['module_id'], $this->request->post);
-			}
+			$this->model_setting_setting->editSetting('module_libredte', $this->request->post);
 
 			$this->session->data['success'] = $this->language->get('text_success');
 
@@ -73,48 +74,30 @@ class ControllerExtensionModuleLibredte extends Controller
 			$data['error_warning'] = '';
 		}
 
-		if (isset($this->error['name'])) {
-			$data['error_name'] = $this->error['name'];
-		} else {
-			$data['error_name'] = '';
-		}
+	
+		$data['breadcrumbs'] = array();
 
-		if (isset($this->error['width'])) {
-			$data['error_width'] = $this->error['width'];
-		} else {
-			$data['error_width'] = '';
-		}
+		$data['breadcrumbs'][] = array(
+			'text' => $this->language->get('text_home'),
+			'href' => $this->url->link('common/dashboard', 'user_token=' . $this->session->data['user_token'], true),
+			'separator' => false
+		);
 
-		if (isset($this->error['height'])) {
-			$data['error_height'] = $this->error['height'];
-		} else {
-			$data['error_height'] = '';
-		}
-        // breadcrumbs
-        $data['breadcrumbs'] = array();
-        $data['breadcrumbs'][] = array(
-            'text' => $this->language->get('text_home'),
-            'href' => $this->url->link('common/dashboard', 'user_token=' . $this->session->data['user_token'], true)
-        );
-        $data['breadcrumbs'][] = array(
-            'text' => $this->language->get('heading_title'),
-            'href' => $this->url->link('extension/module/libredte', 'user_token=' . $this->session->data['user_token'], true)
-        );
-		
-		
-		if (!isset($this->request->get['module_id'])) {
-			$data['action'] = $this->url->link('extension/module/libredte', 'user_token=' . $this->session->data['user_token'], true);
-		} else {
-			$data['action'] = $this->url->link('extension/module/libredte', 'user_token=' . $this->session->data['user_token'] . '&module_id=' . $this->request->get['module_id'], true);
-		}
+		$data['breadcrumbs'][] = array(
+			'text' => $this->language->get('text_extension'),
+			'href' => $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=module', true),
+			'separator' => ' :: '
+		);
+
+		$data['breadcrumbs'][] = array(
+			'text' => $this->language->get('heading_title'),
+			'href' => $this->url->link('extension/module/libredte', 'user_token=' . $this->session->data['user_token'], true),
+			'separator' => ' :: '
+		);
+
+		$data['action'] = $this->url->link('extension/module/libredte', 'user_token=' . $this->session->data['user_token'], true);
 
 		$data['cancel'] = $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=module', true);
-
-		if (isset($this->request->get['module_id']) && ($this->request->server['REQUEST_METHOD'] != 'POST')) {
-			$module_info = $this->model_setting_module->getModule($this->request->get['module_id']);
-		}
-
-		
 		
 		
 		
@@ -128,11 +111,11 @@ class ControllerExtensionModuleLibredte extends Controller
         // si se envío el formulario se procesa
         if (!empty($this->request->post)) {
             // verificar que campos mínimos estén completos
-            if (empty($this->request->post['libredte_url']) or empty($this->request->post['libredte_contribuyente']) or empty($this->request->post['libredte_preauth_hash'])) {
+            if (empty($this->request->post['module_libredte_url']) or empty($this->request->post['module_libredte_contribuyente']) or empty($this->request->post['module_libredte_preauth_hash'])) {
                 $data['error_warning'] = 'Falta completar campos en la configuración';
             }
             // verificar formato del rut
-            else if (!$this->libredte->checkRut($this->request->post['libredte_contribuyente'])) {
+            else if (!$this->libredte->checkRut($this->request->post['module_libredte_contribuyente'])) {
                 $data['error_warning'] = 'RUT del contribuyente es incorrecto';
             }
             // guardar en base de datos
@@ -140,13 +123,12 @@ class ControllerExtensionModuleLibredte extends Controller
                 $settings = array_merge(
                     $this->request->post,
                     [
-                        'libredte_contribuyente' => $this->libredte->checkRut($this->request->post['libredte_contribuyente'])
+                        'module_libredte_contribuyente' => $this->libredte->checkRut($this->request->post['module_libredte_contribuyente'])
                     ]
                 );
                 $this->model_setting_setting->editSetting(
                     'module_libredte', $settings, (int)$this->config->get('config_store_id')
                 );
-                $data['success'] = 'Se ha guardado la configuración de la extensión';
             }
             // guardar datos para ser mostrados en la vista
             $libredte_info = $this->request->post;
@@ -156,13 +138,16 @@ class ControllerExtensionModuleLibredte extends Controller
             $libredte_info = $this->model_setting_setting->getSetting(
                 'module_libredte', (int)$this->config->get('config_store_id')
             );
-			
-			if (!empty($libredte_info['libredte_contribuyente'])){
-            $libredte_contribuyente = $libredte_info['libredte_contribuyente'];
-            $libredte_info['libredte_contribuyente'] = number_format(
-                $libredte_info['libredte_contribuyente'], 0, ',', '.'
-            ).'-'.$this->libredte->dv($libredte_info['libredte_contribuyente']);
+			/*
+			if (!empty($libredte_info['module_libredte_contribuyente'])){
+            $libredte_contribuyente = $libredte_info['module_libredte_contribuyente'];
+            $libredte_info['module_libredte_contribuyente'] = number_format(
+                $libredte_info['module_libredte_contribuyente'], 0, ',', '.'
+            ).'-'.$this->libredte->dv($libredte_info['module_libredte_contribuyente']);
 			}
+			*/
+			
+			
         }
 		
 		if (empty($data['error_warning'])){
@@ -195,7 +180,7 @@ class ControllerExtensionModuleLibredte extends Controller
         ];
         foreach ($enlaces as $key => $enlace) {
             $data['enlace_'.$key] = $this->url->link(
-                'extension/libredte/go',
+                'extension/module/libredte/go',
                 [
                     'user_token' => $this->session->data['user_token'],
                     'url' => base64_encode($enlace),
@@ -205,15 +190,7 @@ class ControllerExtensionModuleLibredte extends Controller
         }
 		
 		
-		if (isset($this->request->post['module_libredte_status'])) {
-			$data['module_libredte_status'] = $this->request->post['module_libredte_status'];
-		} elseif (!empty($module_info)) {
-			$data['module_libredte_status'] = $module_info['module_libredte_status'];
-		} else {
-			$data['module_libredte_status'] = '';
-		}
-		
-		
+	
         // cargar vista
         $this->response->setOutput($this->load->view('extension/module/libredte', $data));
     }
@@ -230,11 +207,11 @@ class ControllerExtensionModuleLibredte extends Controller
         $libredte_info = $this->model_setting_setting->getSetting(
             'module_libredte', (int)$this->config->get('config_store_id')
         );
-        if (!empty($libredte_info['libredte_url']) and !empty($libredte_info['libredte_contribuyente']) and !empty($libredte_info['libredte_preauth_hash'])) {
+        if (!empty($libredte_info['module_libredte_url']) and !empty($libredte_info['module_libredte_contribuyente']) and !empty($libredte_info['module_libredte_preauth_hash'])) {
             $url = !empty($this->request->get['url']) ? $this->request->get['url'] : base64_encode('/dte');
-            $token = $libredte_info['libredte_preauth_hash'];
-            $url = base64_encode('/dte/contribuyentes/seleccionar/'.$libredte_info['libredte_contribuyente'].'/'.$url);
-            header('location: '.$libredte_info['libredte_url'].'/usuarios/preauth/'.$token.'/0/'.$url);
+            $token = $libredte_info['module_libredte_preauth_hash'];
+            $url = base64_encode('/dte/contribuyentes/seleccionar/'.$libredte_info['module_libredte_contribuyente'].'/'.$url);
+            header('location: '.$libredte_info['module_libredte_url'].'/usuarios/preauth/'.$token.'/0/'.$url);
             exit;
         }
         // debe configurar antes
