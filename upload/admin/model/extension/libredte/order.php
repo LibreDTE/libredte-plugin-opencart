@@ -51,6 +51,7 @@ class ModelExtensionLibredteOrder extends Model
      */
     public function createInvoiceNo($order_id)
     {
+		$this->libredte = new libredte();
         $dte = $this->getDte($order_id);
         if (!$dte)
             return false;
@@ -60,8 +61,8 @@ class ModelExtensionLibredteOrder extends Model
         );
         // emitir dte temporal
         $response = $this->libredte->post(
-            $libredte_info['libredte_url'].'/api/dte/documentos/emitir',
-            $libredte_info['libredte_preauth_hash'],
+            $libredte_info['module_libredte_url'].'/api/dte/documentos/emitir',
+            $libredte_info['module_libredte_preauth_hash'],
             $dte
         );
         if ($response['status']['code']!=200) {
@@ -71,8 +72,8 @@ class ModelExtensionLibredteOrder extends Model
         $dte_tmp = $response['body'];
         // generar dte definitivo y enviar al sii
         $response = $this->libredte->post(
-            $libredte_info['libredte_url'].'/api/dte/documentos/generar',
-            $libredte_info['libredte_preauth_hash'],
+            $libredte_info['module_libredte_url'].'/api/dte/documentos/generar',
+            $libredte_info['module_libredte_preauth_hash'],
             $dte_tmp
         );
         if ($response['status']['code']!=200) {
