@@ -83,7 +83,7 @@ $(document).delegate('#button-libredte', 'click', function() {
 	$('#error_giro').remove();
 	var tipo = $('#libredte_frontend_tipo').val();
 	
-	if(tipo=="fe" || tipo=="fee") {
+	if(tipo=="fe") {
 		if($('#libredte_frontend_rut').val()) {
 			if($('#libredte_frontend_razonsocial').val()) {
 				if($('#libredte_frontend_giro').val()) {
@@ -191,7 +191,7 @@ $(document).delegate('#button-confirm', 'click', function() {
 function libredte_cambiar(){
 	var tipo = $('#libredte_frontend_tipo').val();
 		
-	if(tipo=="fe" || tipo=="fee") {
+	if(tipo=="fe") {
 		document.getElementById("libredte_div_factura").style.display = "block";
 	}
 	else {		
