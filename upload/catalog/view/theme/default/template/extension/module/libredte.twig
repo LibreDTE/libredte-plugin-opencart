@@ -1,0 +1,201 @@
+<!-- LibreDTE -->
+<script src="admin/view/javascript/libredte/jquery.Rut.js"></script>
+
+<script>
+$.ajaxSetup({
+			beforeSend: function(jqXHR) {  
+				jqXHR.abort();
+			}
+		});
+</script>
+
+<script>
+	$(window).load(function(){ 
+		var libredte = "<div class='panel panel-default'>" +
+						"<div class='panel-heading'>" +
+							"<h4 class='panel-title'>Opciones de Facturación</h4>" +
+						"</div>" +
+						"<div class='panel-collapse collapse' id='collapse-datos-de-libredte'>" +
+							"<div class='panel-body'>" +
+			
+								"<div class='form-group'>" +
+									"<label for='libredte_frontend_tipo'>Tipo de documento:</label>" +
+									"<select class='form-control' id='libredte_frontend_tipo' name='libredte_frontend_tipo' onchange='libredte_cambiar()'>" +
+										"<option value='be'>Boleta electr&oacute;nica</option>" +
+										"<option value='fe'>Factura electr&oacute;nica</option>" +
+									"</select>" +
+								"</div>" +
+								
+								"<div id='libredte_div_factura'>" +
+									"<div class='form-group'>" +
+										"<label for='libredte_frontend_rut'>RUT:</label>" +
+										"<input type='text' class='form-control' id='libredte_frontend_rut' name='libredte_frontend_rut'>" +						
+									"</div>" +
+									"<div class='form-group'>" +
+										"<label for='libredte_frontend_razonsocial'>Raz&oacute;n social:</label>" +
+										"<input type='text' class='form-control' id='libredte_frontend_razonsocial' name='libredte_frontend_razonsocial'>" +						
+									"</div>" +
+									"<div class='form-group'>" +
+										"<label for='libredte_frontend_giro'>Giro:</label>" +
+										"<input type='text' class='form-control' id='libredte_frontend_giro' name='libredte_frontend_giro'>" +						
+									"</div>" +
+								"</div>" +
+								
+								"<div class='buttons'>" +
+									"<div class='pull-right'>" +
+										"<input type='button' value='Siguiente' id='button-libredte' class='btn btn-primary' loading='Cargando...'>" +
+									"</div>" +
+								"</div>" +
+							"</div>" +
+						"</div>" +
+					"</div>";
+	
+		$('#accordion').prepend(libredte);		
+		
+		libredte_cambiar();
+		
+		$('#libredte_frontend_rut').Rut({
+			on_error: function(){
+				alert('El rut ingresado es incorrecto');$('#libredte_frontend_rut').val('');$('#libredte_frontend_rut').focus(); 
+			},
+		   format_on: 'keyup' 
+		});
+				
+		$('#collapse-checkout-option').parent().find('.panel-heading .panel-title').html('{{ text_checkout_option }}');
+		
+		$.ajaxSetup({
+			beforeSend: function(jqXHR) { // before jQuery send the request we will push it to our array
+				
+			}
+		});
+		
+		$('#collapse-datos-de-libredte').parent().find('.panel-heading .panel-title').html('<a href="#collapse-datos-de-libredte" data-toggle="collapse" data-parent="#accordion" class="accordion-toggle">Datos de libredte<i class="fa fa-caret-down"></i></a>');
+		$('a[href=\'#collapse-datos-de-libredte\']').trigger('click');
+		
+		
+		
+	});
+	
+$(document).delegate('#button-libredte', 'click', function() {
+    //validamos
+	$('#error_rut').remove();
+	$('#error_razonsocial').remove();
+	$('#error_giro').remove();
+	var tipo = $('#libredte_frontend_tipo').val();
+	
+	if(tipo=="fe" || tipo=="fee") {
+		if($('#libredte_frontend_rut').val()) {
+			if($('#libredte_frontend_razonsocial').val()) {
+				if($('#libredte_frontend_giro').val()) {
+					valido();
+				}
+				else {
+					var elemento = $('#collapse-datos-de-libredte .panel-body');
+					elemento.prepend("<div class='alert alert-danger' id='error_giro'>Debe ingresar un giro</div>");
+				}
+			}
+			else {
+				var elemento = $('#collapse-datos-de-libredte .panel-body');
+				elemento.prepend("<div class='alert alert-danger' id='error_razonsocial'>Debe ingresar una razon social</div>");
+			} 
+		}
+		else {
+			var elemento = $('#collapse-datos-de-libredte .panel-body');
+			elemento.prepend("<div class='alert alert-danger' id='error_rut'>Debe ingresar el RUT</div>");
+		} 
+	}
+	else {		
+		valido();
+	}
+	
+	
+});
+
+function valido() {
+	$.ajax({
+		url: "index.php?route=libredte/datos_libredte/save",
+		type: 'post',
+		dataType: 'html',
+		data: {
+			'tipo': $('#libredte_frontend_tipo').val(),
+			'rut': $('#libredte_frontend_rut').val(),
+			'razonsocial': $('#libredte_frontend_razonsocial').val(),
+			'giro': $('#libredte_frontend_giro').val()
+		},
+		complete: function() {
+			$('#button-libredte').button('reset');
+		},
+		success: function(html) {
+			console.log(html);
+			
+			{% if not logged %}
+				$.ajax({
+					url: 'index.php?route=checkout/login',
+					dataType: 'html',
+					success: function(html) {
+					   $('#collapse-checkout-option .panel-body').html(html);
+
+						$('#collapse-checkout-option').parent().find('.panel-heading .panel-title').html('<a href="#collapse-checkout-option" data-toggle="collapse" data-parent="#accordion" class="accordion-toggle"><?php echo $text_checkout_option; ?> <i class="fa fa-caret-down"></i></a>');
+
+						$('a[href=\'#collapse-checkout-option\']').trigger('click');
+					},
+					error: function(xhr, ajaxOptions, thrownError) {
+						alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+					}
+				});
+			{% else %}
+				$.ajax({
+					url: 'index.php?route=checkout/payment_address',
+					dataType: 'html',
+					success: function(html) {
+						$('#collapse-payment-address .panel-body').html(html);
+
+						$('#collapse-payment-address').parent().find('.panel-heading .panel-title').html('<a href="#collapse-payment-address" data-toggle="collapse" data-parent="#accordion" class="accordion-toggle"><?php echo $text_checkout_payment_address; ?> <i class="fa fa-caret-down"></i></a>');
+
+						$('a[href=\'#collapse-payment-address\']').trigger('click');
+					},
+					error: function(xhr, ajaxOptions, thrownError) {
+						alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+					}
+				});
+			{% endif %}
+		},
+		error: function(xhr, ajaxOptions, thrownError) {
+			alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+		}
+	});
+}
+
+/*
+$(document).delegate('#button-confirm', 'click', function() {
+    alert('libredte');
+	$.ajax({
+		url: "index.php?route=libredte/datos_libredte/confirmar",
+		dataType: 'html',
+		async: false,
+		complete: function() {
+			//$('#button-confirm').button('reset');
+		},
+		success: function(html) {
+			
+			console.log(html);
+		
+		},
+		error: function(xhr, ajaxOptions, thrownError) {
+			alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+		}
+	});
+});
+*/
+
+function libredte_cambiar(){
+	var tipo = $('#libredte_frontend_tipo').val();
+		
+	if(tipo=="fe" || tipo=="fee") {
+		document.getElementById("libredte_div_factura").style.display = "block";
+	}
+	else {		
+		document.getElementById("libredte_div_factura").style.display = "none";
+	}
+}
+</script>
