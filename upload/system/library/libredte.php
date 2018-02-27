@@ -57,8 +57,8 @@ class Libredte
     private function consume($url, $hash, $data, $method)
     {
         if (!class_exists('\sowerphp\core\Network_Http_Rest')) {
-            require_once('Rest.php');
-            require_once('Socket.php');
+            require_once('rest.php');
+            require_once('socket.php');
         }
         $rest = new \sowerphp\core\Network_Http_Rest();
         $rest->setAuth($hash);

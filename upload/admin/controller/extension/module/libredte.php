@@ -36,13 +36,13 @@ class ControllerExtensionModuleLibredte extends Controller
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
      * @version 2016-01-26
      */
-	 /*
+	 
     public function __construct($registry)
     {
         $this->registry = $registry;
         $this->registry->set('libredte', new Libredte($this->registry));
     }
-	*/
+	
     /**
      * Acción que muestra el panel de administración de la extensión
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
@@ -52,7 +52,7 @@ class ControllerExtensionModuleLibredte extends Controller
     {
 		
 		
-		$this->libredte = new libredte();
+	//	$this->libredte = new libredte();
         $this->load->model('setting/setting');
 		$this->load->model('setting/module');
         $this->load->language('extension/module/libredte');
@@ -250,12 +250,23 @@ class ControllerExtensionModuleLibredte extends Controller
     public function install() {
 		      $this->load->model('setting/setting');
 		$this->model_setting_setting->editSetting('module_libredte', array("module_libredte_status" => 1));
-    
+
+		$query_create = "
+					CREATE TABLE IF NOT EXISTS `".DB_PREFIX."libredte` (
+					  `order_id` int(11),
+					  `boletaofactura` VARCHAR(255),
+					  `rut` VARCHAR(255),
+					  `giro` VARCHAR(255),
+					PRIMARY KEY (`order_id`)
+					)";
+	    $this->db->query($query_create);
+		
     }
 
     public function uninstall() {
          $this->load->model('setting/setting');
         $this->model_setting_setting->deleteSetting('module_libredte');
+		$this->db->query("DROP TABLE IF EXISTS `".DB_PREFIX."libredte`");
     }
 
 

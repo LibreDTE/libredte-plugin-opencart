@@ -34,13 +34,13 @@ class ModelExtensionLibredteOrder extends Model
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
      * @version 2016-01-26
      */
-	 /*
+	 
     public function __construct($registry)
     {
         $this->registry = $registry;
         $this->registry->set('libredte', new Libredte($this->registry));
     }
-	*/
+	
 	
 	
     /**
@@ -51,10 +51,12 @@ class ModelExtensionLibredteOrder extends Model
      */
     public function createInvoiceNo($order_id)
     {
-		$this->libredte = new libredte();
-        $dte = $this->getDte($order_id);
+	//	$this->libredte = new libredte();
+      
+        $dte = $this->getDte($order_id, 33);
         if (!$dte)
             return false;
+        
         $order_info = $this->model_sale_order->getOrder($order_id);
         $libredte_info = $this->model_setting_setting->getSetting(
             'module_libredte', $order_info['store_id']
@@ -69,6 +71,7 @@ class ModelExtensionLibredteOrder extends Model
             $this->log->write($response['body']);
             return false;
         }
+
         $dte_tmp = $response['body'];
         // generar dte definitivo y enviar al sii
         $response = $this->libredte->post(
@@ -97,18 +100,25 @@ class ModelExtensionLibredteOrder extends Model
     {
         $this->load->model('sale/order');
         $order_info = $this->model_sale_order->getOrder($order_id);
-        if (!$order_info or $order_info['invoice_no'])
+        if (!$order_info)
             return false;
+        
         $this->load->model('setting/setting');
         $libredte_info = $this->model_setting_setting->getSetting(
             'module_libredte', $order_info['store_id']
         );
-        $custom_field_rut = $libredte_info['module_libredte_cliente_rut'];
-        $custom_field_giro = $libredte_info['module_libredte_cliente_giro'];
+
+	   $result = $this->db->query("SELECT * FROM `".DB_PREFIX."libredte` WHERE order_id=" . $order_id);
+	   if ($result->num_rows){
+	   $rut = $result->row['rut'];
+	   $giro = $result->row['giro'];
+         
+	   }
+	   
         $product_code = $libredte_info['module_libredte_producto_codigo'];
-        if (empty($order_info['custom_field'][$custom_field_rut]) or empty($order_info['custom_field'][$custom_field_giro]))
+        if (empty($rut) or empty($giro))
             return false;
-        if (!$this->libredte->checkRut($order_info['custom_field'][$custom_field_rut]))
+        if (!$this->libredte->checkRut($rut))
             return false;
         // crear arreglo con detalles de productos y/o servicios
         $this->load->model('extension/libredte/product');
@@ -150,9 +160,9 @@ class ModelExtensionLibredteOrder extends Model
                     'RUTEmisor' => $libredte_info['module_libredte_contribuyente'].'-'.$this->libredte->dv($libredte_info['module_libredte_contribuyente']),
                 ],
                 'Receptor' => [
-                    'RUTRecep' => $order_info['custom_field'][$custom_field_rut],
+                    'RUTRecep' => $rut,
                     'RznSocRecep' => substr($order_info['customer'], 0, 100),
-                    'GiroRecep' => substr($order_info['custom_field'][$custom_field_giro], 0, 40),
+                    'GiroRecep' => substr($giro, 0, 40),
                     'Contacto' => substr($order_info['telephone'], 0, 80),
                     'CorreoRecep' => substr($order_info['email'], 0, 80),
                     'DirRecep' => substr($order_info['payment_address_1'].(!empty($order_info['payment_address_2'])?(', '.$order_info['payment_address_2']):''), 0, 70),
