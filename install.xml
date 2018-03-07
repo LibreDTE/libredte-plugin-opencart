@@ -1024,7 +1024,7 @@ $(document).delegate('#button-email', 'click', function() {
 		<input type="text" name="oc" value="{{ oc }}" placeholder="Orden de Compra - Opcional" id="input-payment-oc" class="form-control" />
 		</div>
 		<div class="input-group date col-xs-10 col-sm-2"> 
-		<input type="text" name="fecha_oc" value="{{ fecha_oc }}" placeholder="" data-date-format="YYYY-MM-DD" id="input-payment-oc-date" class="form-control" readonly />
+		<input type="text" name="fecha_oc" value="{{ fecha_oc }}" placeholder="fecha de la O.C." data-date-format="YYYY-MM-DD" id="input-payment-oc-date" class="form-control" readonly />
 		<span class="input-group-btn">
 		<button class="btn btn-default" type="button" id="input-payment-oc-date-b"><i class="fa fa-calendar"></i></button>
 		</span>
