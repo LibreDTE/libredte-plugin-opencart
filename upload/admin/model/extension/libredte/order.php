@@ -53,10 +53,15 @@ class ModelExtensionLibredteOrder extends Model
     {
 	//	$this->libredte = new libredte();
       
-        $dte = $this->getDte($order_id, 33);
-        if (!$dte)
+        $dte = $this->getDte($order_id);
+        if (!$dte){
+        $fp = fopen("libredte.log", "a+");
+		fputs($fp,"No se pudo Obtener DTE: \n");
+        //fputs($fp, $order_id . " \n");
+        fclose($fp);
+          
             return false;
-        
+        }
         $order_info = $this->model_sale_order->getOrder($order_id);
         $libredte_info = $this->model_setting_setting->getSetting(
             'module_libredte', $order_info['store_id']
@@ -83,10 +88,28 @@ class ModelExtensionLibredteOrder extends Model
             $this->log->write($response['body']);
             return false;
         }
+
         $invoice_prefix = 'T'.$response['body']['dte'].'F';
+        
+        
         $invoice_no = $response['body']['folio'];
         $this->db->query("UPDATE `" . DB_PREFIX . "order` SET invoice_no = '" . (int)$invoice_no . "', invoice_prefix = '" . $this->db->escape($invoice_prefix) . "' WHERE order_id = '" . (int)$order_id . "'");
-        return $invoice_prefix.$invoice_no;
+
+		/*      
+      	ob_start();
+		var_dump($response);
+		$output = ob_get_clean();
+        $fp = fopen("libredte.log", "a+");
+		fputs($fp,"Respuesta de emision de DTE: \n");
+        fputs($fp, $output . " \n");
+        fclose($fp);
+      	*/
+      	
+        $linkpdf = $libredte_info['module_libredte_url'] . '/dte/dte_emitidos/pdf/' . $response['body']['dte'] . '/' . $invoice_no . '/1/' . $libredte_info['module_libredte_contribuyente'] . '/' . $response['body']['fecha'] . '/' . $response['body']['total'];
+      	$linkxml = $libredte_info['module_libredte_url'] . '/dte/dte_emitidos/xml/' . $response['body']['dte'] . '/' . $invoice_no . '/' . $libredte_info['module_libredte_contribuyente'] . '/' . $response['body']['fecha'] . '/' . $response['body']['total'];
+      	$this->db->query("UPDATE `" . DB_PREFIX . "libredte` SET linkpdf = '" . $linkpdf . "' , linkxml = '" . $linkxml . "' WHERE order_id = '" . (int)$order_id . "'");
+      
+      return $invoice_prefix.$invoice_no;
     }
 
     /**
@@ -100,9 +123,31 @@ class ModelExtensionLibredteOrder extends Model
     {
         $this->load->model('sale/order');
         $order_info = $this->model_sale_order->getOrder($order_id);
-        if (!$order_info)
+        if (!$order_info){
+        $fp = fopen("libredte.log", "a+");
+		fputs($fp,"Que Raro, no se pudo obtener la informacion de la orden: \n la Factura tiene numero: " . $order_info['invoice_no']);
+        //fputs($fp, $order_id . " \n");
+        fclose($fp);  
             return false;
+        }
+      
+      
+      $coupon = 0;
+      $shipping = 0;
+      // Se obtiene el valor del despacho, si es que existe
+		$order_totals = $this->model_sale_order->getOrderTotals($order_id);
+       foreach ($order_totals as $total){
+       if ($total['code'] == 'shipping'){
+       $shipping = $total['value'];
+       }
+       if ($total['code'] == 'coupon'){
+       $coupon = $total['value'];
+       }  
         
+       }
+       $coupon = abs($coupon);
+      
+      
         $this->load->model('setting/setting');
         $libredte_info = $this->model_setting_setting->getSetting(
             'module_libredte', $order_info['store_id']
@@ -112,14 +157,77 @@ class ModelExtensionLibredteOrder extends Model
 	   if ($result->num_rows){
 	   $rut = $result->row['rut'];
 	   $giro = $result->row['giro'];
+       $rsocial = $result->row['rsocial'];
+       $obs = $result->row['obs'];
+       $oc = $result->row['oc'];
+       $fecha_oc = $result->row['fecha_oc'];
+       if (empty($fecha_oc)){
+       $fecha_oc = date('Y-m-d');
+       }  
+         
+         
+         
+       $boletaofactura = $result->row['boletaofactura'];
+       if (($boletaofactura == 'factura') && ($shipping > 0)){
+       $shipping = round($shipping / 1.19);
+       } 
+       else
+       {
+       $shipping = round($shipping);
+       } 
+           
+         
+       if ($boletaofactura == 'boleta'){
+       $TipoDTE = 39;
+       } 
+       else
+       {
+       $TipoDTE = 33;
+       } 
+     
+       if ($boletaofactura == 'boleta'){
+       if (empty($rut)){
+       $rut = '66666666-6';
+       }
+       if (empty($giro)){
+       $giro = 'Sin giro informado';
+       }
+       if (empty($rsocial)){
+       $rsocial = 'Sin razón social informada';
+       }
+        
+       }  
+         
+         
+        $fp = fopen("libredte.log", "a+");
+		fputs($fp,"Se obtuvo el siguiente RUT: \n" . $rut . " y el siguiente giro: " . $giro);
+        fclose($fp);
+         
          
 	   }
 	   
+           
+           
         $product_code = $libredte_info['module_libredte_producto_codigo'];
-        if (empty($rut) or empty($giro))
+        if (empty($rut) or empty($giro) or empty($rsocial)){
+        $fp = fopen("libredte.log", "a+");
+		fputs($fp,"El rut, el giro o la razón social están vacíos" . " \n");
+        fclose($fp);   
             return false;
-        if (!$this->libredte->checkRut($rut))
+        }
+        
+      
+      
+      
+        /*
+      	if (!$this->libredte->checkRut(trim($rut))){
+        $fp = fopen("libredte.log", "a+");
+		fputs($fp,"El Rut esta erroneo" . " \n");
+        fclose($fp);   
             return false;
+        }
+      	*/
+      
         // crear arreglo con detalles de productos y/o servicios
         $this->load->model('extension/libredte/product');
         $products = $this->model_sale_order->getOrderProducts($order_id);
@@ -132,36 +240,94 @@ class ModelExtensionLibredteOrder extends Model
                 $price = $product['price'];
                 $discount = 0;
             }
+          
+          
+          // En el caso de la boleta el precio llega tal cual al sistema de LibreDTE
+          // pero en el caso de la factura le quitamos el IVA
+          
+          if ($boletaofactura == 'factura'){
+          $price = $price / 1.19;
+          }
+          
+     
             $Detalle[] = [
                 'CdgItem' => $product_info[$product_code] ? [
                     'TpoCodigo' => 'INT1',
                     'VlrCodigo' => substr($product_info[$product_code], 0, 35),
                 ] : false,
-                'IndExe' => $product_info['tax_class_id'] ? false : 1,
+                'IndExe' => $product_info['tax_class_id'] ? false : false,
                 'NmbItem' => substr($product['name'], 0, 80),
-                'DscItem' => substr($product_info['meta_description'], 0, 1000),
+                'DscItem' => '',
                 'QtyItem' => $product['quantity'],
-                'UnmdItem' => false,
+                'UnmdItem' => 'ud.',
                 'PrcItem' => round($price),
                 'DescuentoMonto' => $discount ? round($discount) : false
             ];
         }
-        if (empty($Detalle))
+      
+      // Se agrega el despacho en caso que exista *********************************
+      
+      if ($shipping > 0){
+            $Detalle[] = [
+                'CdgItem' => [
+                    'TpoCodigo' => 'INT1',
+                    'VlrCodigo' => '00000001',
+                ],
+                'IndExe' => false,
+                'NmbItem' => 'Costo de Envío',
+                'DscItem' => '',
+                'QtyItem' => 1,
+                'UnmdItem' => '',
+                'PrcItem' => $shipping,
+                'DescuentoMonto' => false
+            ];
+      
+      }
+      
+      //*************************************************
+      //***************** Se envia descuento global, en caso que exista
+          if ($coupon){
+            $dctoglobal[] = [
+                'NroLinDR' => 1,
+                'TpoMov' => 'D',
+                'TpoValor' => '$',
+                'ValorDR' => abs(round($coupon / 1.19))
+            ];
+      }
+            
+      
+      
+      //************************************************
+      
+        if (empty($Detalle)){
+         $fp = fopen("libredte.log", "a+");
+		fputs($fp,"El listado de productos esta vacio" . " \n");
+        fclose($fp);    
             return false;
-        // entregar arreglo con datos del DTE
-        return [
+        }
+            
+      
+      
+if ($coupon){      
+      
+      if (!empty($oc)){
+
+      
+      $respuesta = [
             'Encabezado' => [
                 'IdDoc' => [
                     'TipoDTE' => $TipoDTE,
                     'Folio' => 0,
                     'FchEmis' => date('Y-m-d'),
+                    'TermPagoGlosa' => $obs,
                 ],
                 'Emisor' => [
                     'RUTEmisor' => $libredte_info['module_libredte_contribuyente'].'-'.$this->libredte->dv($libredte_info['module_libredte_contribuyente']),
                 ],
                 'Receptor' => [
                     'RUTRecep' => $rut,
-                    'RznSocRecep' => substr($order_info['customer'], 0, 100),
+                     //'RznSocRecep' => substr($order_info['customer'], 0, 100),
+                  	'RznSocRecep' => substr($rsocial, 0, 40),
                     'GiroRecep' => substr($giro, 0, 40),
                     'Contacto' => substr($order_info['telephone'], 0, 80),
                     'CorreoRecep' => substr($order_info['email'], 0, 80),
@@ -170,7 +336,126 @@ class ModelExtensionLibredteOrder extends Model
                 ],
             ],
             'Detalle' => $Detalle,
-        ];
+            'DscRcgGlobal' => $dctoglobal,
+        	'Referencia' => [
+			'NroLinRef' => 1,
+			'TpoDocRef' => 801,
+			'FolioRef' => $oc,
+			'FchRef' => $fecha_oc,
+			],
+      		    ];
+
+      }
+      else
+      {
+      
+        $respuesta = [
+            'Encabezado' => [
+                'IdDoc' => [
+                    'TipoDTE' => $TipoDTE,
+                    'Folio' => 0,
+                    'FchEmis' => date('Y-m-d'),
+                    'TermPagoGlosa' => $obs,
+                ],
+                'Emisor' => [
+                    'RUTEmisor' => $libredte_info['module_libredte_contribuyente'].'-'.$this->libredte->dv($libredte_info['module_libredte_contribuyente']),
+                ],
+                'Receptor' => [
+                    'RUTRecep' => $rut,
+                     //'RznSocRecep' => substr($order_info['customer'], 0, 100),
+                  	'RznSocRecep' => substr($rsocial, 0, 50),
+                    'GiroRecep' => substr($giro, 0, 40),
+                    'Contacto' => substr($order_info['telephone'], 0, 80),
+                    'CorreoRecep' => substr($order_info['email'], 0, 80),
+                    'DirRecep' => substr($order_info['payment_address_1'].(!empty($order_info['payment_address_2'])?(', '.$order_info['payment_address_2']):''), 0, 70),
+                    'CmnaRecep' => substr($order_info['payment_city'], 0, 20),
+                ],
+            ],
+            'Detalle' => $Detalle,
+            'DscRcgGlobal' => $dctoglobal,
+          	
+      		    ];    
+        
+      }
+      
+}      
+else
+{
+//En caso que no haya cupon de descuento global
+
+      if (!empty($oc)){
+      
+      $respuesta = [
+            'Encabezado' => [
+                'IdDoc' => [
+                    'TipoDTE' => $TipoDTE,
+                    'Folio' => 0,
+                    'FchEmis' => date('Y-m-d'),
+                    'TermPagoGlosa' => $obs,
+                ],
+                'Emisor' => [
+                    'RUTEmisor' => $libredte_info['module_libredte_contribuyente'].'-'.$this->libredte->dv($libredte_info['module_libredte_contribuyente']),
+                ],
+                'Receptor' => [
+                    'RUTRecep' => $rut,
+                     //'RznSocRecep' => substr($order_info['customer'], 0, 100),
+                  	'RznSocRecep' => substr($rsocial, 0, 40),
+                    'GiroRecep' => substr($giro, 0, 40),
+                    'Contacto' => substr($order_info['telephone'], 0, 80),
+                    'CorreoRecep' => substr($order_info['email'], 0, 80),
+                    'DirRecep' => substr($order_info['payment_address_1'].(!empty($order_info['payment_address_2'])?(', '.$order_info['payment_address_2']):''), 0, 70),
+                    'CmnaRecep' => substr($order_info['payment_city'], 0, 20),
+                ],
+            ],
+            'Detalle' => $Detalle,
+        	'Referencia' => [
+			'NroLinRef' => 1,
+			'TpoDocRef' => 801,
+			'FolioRef' => $oc,
+			'FchRef' => $fecha_oc,
+			],
+      		    ];
+
+      }
+      else
+      {
+      
+        $respuesta = [
+            'Encabezado' => [
+                'IdDoc' => [
+                    'TipoDTE' => $TipoDTE,
+                    'Folio' => 0,
+                    'FchEmis' => date('Y-m-d'),
+                    'TermPagoGlosa' => $obs,
+                ],
+                'Emisor' => [
+                    'RUTEmisor' => $libredte_info['module_libredte_contribuyente'].'-'.$this->libredte->dv($libredte_info['module_libredte_contribuyente']),
+                ],
+                'Receptor' => [
+                    'RUTRecep' => $rut,
+                     //'RznSocRecep' => substr($order_info['customer'], 0, 100),
+                  	'RznSocRecep' => substr($rsocial, 0, 50),
+                    'GiroRecep' => substr($giro, 0, 40),
+                    'Contacto' => substr($order_info['telephone'], 0, 80),
+                    'CorreoRecep' => substr($order_info['email'], 0, 80),
+                    'DirRecep' => substr($order_info['payment_address_1'].(!empty($order_info['payment_address_2'])?(', '.$order_info['payment_address_2']):''), 0, 70),
+                    'CmnaRecep' => substr($order_info['payment_city'], 0, 20),
+                ],
+            ],
+            'Detalle' => $Detalle,
+          	
+      		    ];    
+        
+      }
+      
+
+}
+      
+   
+        // entregar arreglo con datos del DTE
+        return $respuesta;
+          
+    
     }
 
 }

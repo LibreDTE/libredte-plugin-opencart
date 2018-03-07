@@ -254,9 +254,16 @@ class ControllerExtensionModuleLibredte extends Controller
 		$query_create = "
 					CREATE TABLE IF NOT EXISTS `".DB_PREFIX."libredte` (
 					  `order_id` int(11),
-					  `boletaofactura` VARCHAR(255),
-					  `rut` VARCHAR(255),
-					  `giro` VARCHAR(255),
+					  `boletaofactura` VARCHAR(10),
+					  `rut` VARCHAR(15),
+                      `rsocial` VARCHAR(50),
+					  `giro` VARCHAR(50),
+					  `oc` VARCHAR(50),
+					  `fecha_oc` VARCHAR(12),
+					  `obs` VARCHAR(50),
+                      `linkpdf` VARCHAR(100),
+                      `linkxml` VARCHAR(100),
+					  `mail_sent` TINYINT(1),
 					PRIMARY KEY (`order_id`)
 					)";
 	    $this->db->query($query_create);

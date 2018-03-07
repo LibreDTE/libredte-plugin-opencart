@@ -1,70 +1,1345 @@
 <?xml version="1.0" encoding="utf-8"?>
 <modification>
-    <name>LibreDTE</name>
-    <version>0.2</version>
-    <code>libredte-opencart-0.2</code>
-    <author>SASCO SpA</author>
-    <link>http://libredte.cl</link>
-    <description><![CDATA[Integración con LibreDTE para facturación electrónica en Chile]]></description>
-    <code>libredte</code>
-    <file path="catalog/controller/product/product.php">
-        <operation>
-            <search><![CDATA[
-            $data['model'] = $product_info['model'];
-            ]]></search>
-            <add position="after"><![CDATA[
-            $data['sku'] = $product_info['sku'];
-            ]]></add>
-        </operation>
-    </file>
-    <file path="catalog/view/theme/default/template/product/product.tpl">
-        <operation>
-            <search><![CDATA[
-            <li><?php echo $text_model; ?> <?php echo $model; ?></li>
-            ]]></search>
-            <add position="after"><![CDATA[
-            <li>SKU: <?php echo $sku; ?></li>
-            ]]></add>
-        </operation>
-    </file>
-    <file path="admin/controller/sale/order.php">
-        <operation>
-            <search><![CDATA[
-            $data['invoice'] = $this->url->link('sale/order/invoice', 'token=' . $this->session->data['token'] . '&order_id=' . (int)$this->request->get['order_id'], 'SSL');
-            ]]></search>
-            <add position="replace"><![CDATA[
-            $this->load->model('libredte/order');
-            $data['invoice'] = $this->url->link('libredte/order/invoice', 'token=' . $this->session->data['token'] . '&order_id=' . (int)$this->request->get['order_id'], 'SSL');
-            ]]></add>
-        </operation>
-        <operation>
-            <search><![CDATA[
-            $invoice_no = $this->model_sale_order->createInvoiceNo($order_id);
-            ]]></search>
-            <add position="replace"><![CDATA[
-            $this->load->model('libredte/order');
-            $invoice_no = $this->model_libredte_order->createInvoiceNo($order_id);
-            ]]></add>
-        </operation>
-    </file>
-    <file path="admin/view/template/common/menu.tpl">
-        <operation>
-            <search><![CDATA[
-            <li><a href="<?php echo $module; ?>"><?php echo $text_module; ?></a></li>
-            ]]></search>
-            <add position="after"><![CDATA[
-            <li><a href="<?php echo $libredte; ?>">LibreDTE</a></li>
-            ]]></add>
-        </operation>
-    </file>
-    <file path="admin/controller/common/menu.php">
-        <operation>
-            <search><![CDATA[
-            $data['module'] = $this->url->link('extension/module', 'token=' . $this->session->data['token'], 'SSL');
-            ]]></search>
-            <add position="after"><![CDATA[
-            $data['libredte'] = $this->url->link('extension/libredte', 'token=' . $this->session->data['token'], 'SSL');
-            ]]></add>
-        </operation>
-    </file>
+	<name><![CDATA[Modificaciones Plugin LibreDTE Opencart]]></name>
+	<version><![CDATA[1.0]]></version>
+	<author><![CDATA[Pablo Estremadoyro]]></author>
+	<link>https://altronics.cl</link>
+	<code>plugin_libredte</code>
+	<file path="admin/controller/sale/order.php">
+		<operation>
+			<search><![CDATA[$data['invoice'] = $this->url->link('sale/order/invoice', 'user_token=' . $this->session->data['user_token'] . '&order_id=' . (int)$this->request->get['order_id'], true);]]></search>
+			<add position="replace"><![CDATA[
+
+				]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['store_url'] = $order_info['store_url'];]]></search>
+			<add position="replace" offset="7"><![CDATA[
+			$data['store_url'] = $order_info['store_url'];
+			}
+			$linkpdf = '';
+			$data['enviado'] = '';
+			
+          
+     		if ($order_info['invoice_no']) {
+            $invnum = $order_info['invoice_prefix'] . $order_info['invoice_no'];    
+             
+            $query =  $this->db->query("SELECT * FROM `" . DB_PREFIX . "libredte` WHERE order_id = " . (int)$order_id);  
+            if ($query->num_rows) {
+            
+            $linkpdf =  $query->row['linkpdf'];
+            $linkxml =  $query->row['linkxml'];
+            $mailenviado = $query->row['mail_sent'];
+			$data['mailenviado'] = $mailenviado;
+              $data['enviado'] = $mailenviado?'Enviado!':'No Enviado';
+            }
+              else
+              {
+              $data['mailenviado'] = 0;
+              $data['enviado'] = 'No Enviado';  
+              }
+            
+             if (!empty($linkpdf)){
+			 //	$data['invoice_no'] = '<a href="' . $linkpdf . '">' . $invnum . ' </a>';
+             $data['invoice_no'] = $invnum . ' [<a href="' . $linkpdf . '">PDF</a>] [<a href="' . $linkxml . '">XML</a>]';	
+             }
+             else
+             {
+             $data['invoice_no'] = $order_info['invoice_prefix'] . $order_info['invoice_no'];
+             }
+              
+			} else {
+				$data['invoice_no'] = '';
+			}     
+                
+			$data['invoice'] = $this->url->link('sale/order/imprimir', 'user_token=' . $this->session->data['user_token'] . '&order_id=' . (int)$this->request->get['order_id'], true);
+				]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[public function createInvoiceNo() {]]></search>
+			<add position="replace" offset="27"><![CDATA[
+			public function createInvoiceNo() {
+			$this->load->language('sale/order');
+      		if (!$this->user->hasPermission('modify', 'sale/order')) {
+			$json = $this->language->get('error_permission');
+		} elseif (isset($this->request->get['order_id'])) {
+			if (isset($this->request->get['order_id'])) {
+				$order_id = $this->request->get['order_id'];
+			} else {
+				$order_id = 0;
+			}
+
+			$this->load->model('sale/order');
+
+			$invoice_no = $this->model_sale_order->createInvoiceNo($order_id);
+
+			if ($invoice_no) {
+				$json = $invoice_no;
+			} else {
+				$json = $this->language->get('error_action');
+			}
+		}
+
+		$this->response->addHeader('Content-Type: text/html');
+		$this->response->setOutput($json);
+		}
+				]]></add>
+		</operation>
+			<operation>
+			<search><![CDATA[public function addReward() {]]></search>
+			<add position="before"><![CDATA[
+					public function sendMail() {
+		$this->load->language('sale/order');
+
+		//$json = array();
+
+		if (!$this->user->hasPermission('modify', 'sale/order')) {
+			$enviado = $this->language->get('error_permission');
+		} elseif (isset($this->request->get['order_id'])) {
+			if (isset($this->request->get['order_id'])) {
+				$order_id = $this->request->get['order_id'];
+			} else {
+				$order_id = 0;
+			}
+
+			$this->load->model('sale/order');
+
+			$enviado = $this->model_sale_order->sendMail($order_id);
+		}
+
+		$this->response->addHeader('Content-Type: text/html');
+		$this->response->setOutput($enviado);
+	}
+	
+		public function imprimir() {
+		$this->load->language('sale/order');
+		if (!$this->user->hasPermission('modify', 'sale/order')) {
+		$this->error['warning'] = $this->language->get('error_permission');
+		$this->response->redirect($this->url->link('sale/order/info', 'user_token=' . $this->session->data['user_token'] . '&order_id=' . $order_id, true));
+		} elseif (isset($this->request->get['order_id'])) {
+			if (isset($this->request->get['order_id'])) {
+				$order_id = $this->request->get['order_id'];
+			} else {
+				$order_id = 0;
+			}
+        }
+			$linkpdf = '';   
+			$dateTime = time();
+            $query =  $this->db->query("SELECT * FROM `" . DB_PREFIX . "libredte` WHERE order_id = " . (int)$order_id);  
+            if ($query->num_rows) { 
+            $linkpdf =  $query->row['linkpdf'];
+			}
+			if (!empty($linkpdf)){
+			$archivopdf = DIR_UPLOAD . "dte_" . $dateTime . ".pdf";
+			$source = file_get_contents($linkpdf);
+			file_put_contents($archivopdf, $source);
+
+			$salida = shell_exec("lp " . $archivopdf);
+			
+			$mask = DIR_UPLOAD . "dte_*.pdf";
+			array_map( "unlink", glob( $mask ) );
+			}
+			$this->response->redirect($this->url->link('sale/order/info', 'user_token=' . $this->session->data['user_token'] . '&order_id=' . $order_id, true));
+	
+		}
+				]]></add>
+		</operation>
+	</file>
+		<file path="admin/model/sale/order.php">
+		<operation>
+			<search><![CDATA[public function createInvoiceNo($order_id) {]]></search>
+			<add position="replace" offset="16"><![CDATA[
+		  public function createInvoiceNo($order_id) {
+    	  $order_info = $this->getOrder($order_id);
+          $this->load->model('extension/libredte/order');   
+    if  ($this->model_extension_libredte_order->createInvoiceNo($order_id)){
+ 		if ($order_info) {
+      	 $query =  $this->db->query("SELECT * FROM `" . DB_PREFIX . "order` WHERE order_id = " . (int)$order_id);
+        if ($query->num_rows) {
+        
+        $invnum = $query->row['invoice_prefix'] . $query->row['invoice_no'];  
+          
+        $query =  $this->db->query("SELECT * FROM `" . DB_PREFIX . "libredte` WHERE order_id = " . (int)$order_id);  
+          
+          
+        // return '<a href="' . $query->row['linkpdf'] . '">' . $invnum . ' </a>';  
+        return $invnum . ' [<a href="' . $query->row['linkpdf'] . '">PDF</a>] [<a href="' . $query->row['linkxml'] . '">XML</a>]';  
+        
+        }
+       
+        
+        }
+    }
+    	else {
+        return 'error';  
+        }         
+		
+		    }
+  
+		public function sendMail($order_id) {
+			
+			
+		$order_info = $this->getOrder($order_id);	
+		$query =  $this->db->query("SELECT * FROM `" . DB_PREFIX . "libredte` WHERE order_id = " . (int)$order_id);
+        if ($query->num_rows) {
+		$linkpdf = $query->row['linkpdf'];
+		$linkxml = $query->row['linkxml'];
+          
+        if ($order_info['invoice_prefix'] == 'T33F'){
+		$archivopdf = DIR_UPLOAD . "factura_" . $order_info['invoice_no'] . ".pdf";
+		$archivoxml = DIR_UPLOAD . "factura_" . $order_info['invoice_no'] . ".xml";
+        }
+        elseif ($order_info['invoice_prefix'] == 'T39F'){
+        $archivopdf = DIR_UPLOAD . "boleta_" . $order_info['invoice_no'] . ".pdf";
+		$archivoxml = DIR_UPLOAD . "boleta_" . $order_info['invoice_no'] . ".xml";
+        }
+        else
+        {
+        $archivopdf = DIR_UPLOAD . "dte_" . $order_info['invoice_no'] . ".pdf";
+		$archivoxml = DIR_UPLOAD . "dte_" . $order_info['invoice_no'] . ".xml";
+        }  
+		$source = file_get_contents($linkpdf);
+		file_put_contents($archivopdf, $source);
+		$source = file_get_contents($linkxml);	
+		file_put_contents($archivoxml, $source);		
+		
+		$language = new Language($order_info['language_code']);
+		$language->load($order_info['language_code']);
+		$language->load('mail/order_add');
+		
+		// HTML Mail
+		
+		if ($order_info['invoice_prefix'] == 'T33F'){
+		$data['text_tipodte'] = 'Factura';
+		$data['title'] = sprintf('Envío DTE %s Orden %d - Factura Electrónica N° %d', $order_info['store_name'], $order_info['order_id'], $order_info['invoice_no']);
+		}
+		elseif ($order_info['invoice_prefix'] == 'T39F')
+		{
+		$data['text_tipodte'] = 'Boleta';	
+		$data['title'] = sprintf('Envío DTE %s Orden %d - Boleta Electrónica N° %d', $order_info['store_name'], $order_info['order_id'], $order_info['invoice_no']);
+		}
+		else
+		{
+		$data['title'] = sprintf('Envío DTE %s Orden %d - Documento Electrónico N° %d', $order_info['store_name'], $order_info['order_id'], $order_info['invoice_no']);	
+		}
+		$data['text_greeting'] = sprintf('Muchas gracias por su compra en la tienda de %s', $order_info['store_name']);
+		$data['logo'] = $order_info['store_url'] . 'image/' . $this->config->get('config_logo');
+		
+		$data['store_url'] = $order_info['store_url'];
+        $data['store_name'] = $order_info['store_name'];
+		$data['order_id'] = $order_info['order_id'];
+		
+		$data['date_added'] = date($language->get('date_format_short'), strtotime($order_info['date_added']));
+		
+		$this->load->model('setting/setting');
+		
+		$from = $this->model_setting_setting->getSettingValue('config_email', $order_info['store_id']);
+		
+		$data['invoice_no'] = $order_info['invoice_no'];
+		
+		if (!$from) {
+			$from = $this->config->get('config_email');
+		}
+		$mail = new Mail($this->config->get('config_mail_engine'));
+		$mail->parameter = $this->config->get('config_mail_parameter');
+		$mail->smtp_hostname = $this->config->get('config_mail_smtp_hostname');
+		$mail->smtp_username = $this->config->get('config_mail_smtp_username');
+		$mail->smtp_password = html_entity_decode($this->config->get('config_mail_smtp_password'), ENT_QUOTES, 'UTF-8');
+		$mail->smtp_port = $this->config->get('config_mail_smtp_port');
+		$mail->smtp_timeout = $this->config->get('config_mail_smtp_timeout');
+
+		$mail->setTo($order_info['email']);
+		$mail->setFrom($from);
+		$mail->setSender(html_entity_decode($order_info['store_name'], ENT_QUOTES, 'UTF-8'));
+		
+        if ($data['text_tipodte'] == 'Factura'){ 
+        $mail->setSubject(html_entity_decode(sprintf('Envío DTE %s Orden %d - Factura Electrónica N° %d', $order_info['store_name'], $order_info['order_id'], $order_info['invoice_no']), ENT_QUOTES, 'UTF-8'));
+        }
+        elseif ($data['text_tipodte'] == 'Boleta'){
+        $mail->setSubject(html_entity_decode(sprintf('Envío DTE %s Orden %d - Boleta Electrónica N° %d', $order_info['store_name'], $order_info['order_id'], $order_info['invoice_no']), ENT_QUOTES, 'UTF-8'));
+        }
+        else
+        {
+        $mail->setSubject(html_entity_decode(sprintf('Envío DTE %s Orden %d - Documento N° %d', $order_info['store_name'], $order_info['order_id'], $order_info['invoice_no']), ENT_QUOTES, 'UTF-8'));
+        }  
+          
+          
+		$mail->addAttachment($archivopdf);
+        $mail->addAttachment($archivoxml);
+		
+		$mail->setHtml($this->load->view('mail/libredte_send', $data));
+		$mail->send();
+					
+		$this->db->query("UPDATE `" . DB_PREFIX . "libredte` SET mail_sent = '1' WHERE order_id = '" . (int)$order_id . "'");	
+		
+        if ($order_info['invoice_prefix'] == 'T33F'){
+        $mask = DIR_UPLOAD . "factura_*.pdf";
+		array_map( "unlink", glob( $mask ) );
+		$mask = DIR_UPLOAD . "factura_*.xml";
+		array_map( "unlink", glob( $mask ) );  
+        }
+        elseif ($order_info['invoice_prefix'] == 'T39F'){
+        $mask = DIR_UPLOAD . "boleta_*.pdf";
+		array_map( "unlink", glob( $mask ) );
+		$mask = DIR_UPLOAD . "boleta_*.xml";
+		array_map( "unlink", glob( $mask ) );
+        }
+        else
+        {
+        $mask = DIR_UPLOAD . "dte_*.pdf";
+		array_map( "unlink", glob( $mask ) );
+		$mask = DIR_UPLOAD . "dte_*.xml";
+		array_map( "unlink", glob( $mask ) );
+        }  
+          
+		return 'Enviado!';	
+		}
+		
+		}
+				]]></add>
+		</operation>
+	</file>
+	<file path="catalog/language/en-gb/checkout/checkout.php">
+		<operation>
+			<search><![CDATA[$_['error_warning']]]></search>
+			<add position="before"><![CDATA[
+$_['error_rut']               		 = 'El Rut Ingresado es incorrecto!';
+$_['error_giro']              	     = 'El giro debe tener entre 5 y 40 caracteres!';
+$_['error_rsocial']           	     = 'La Razón Social debe tener entre 5 y 40 caracteres!';
+]]></add>
+		</operation>
+	</file>	
+	<file path="catalog/controller/checkout/confirm.php">
+		<operation>
+			<search><![CDATA[$order_data['payment_firstname'] = $this->session->data['payment_address']['firstname'];]]></search>
+			<add position="before"><![CDATA[
+			$order_data['payment_boletaofactura'] = $this->session->data['payment_address']['boletaofactura'];
+			$order_data['payment_rut'] = $this->session->data['payment_address']['rut'];
+			$order_data['payment_rsocial'] = $this->session->data['payment_address']['rsocial'];		
+			$order_data['payment_giro'] = $this->session->data['payment_address']['giro'];		
+
+			$order_data['payment_oc'] = $this->session->data['payment_address']['oc'];		
+			$order_data['payment_fecha_oc'] = $this->session->data['payment_address']['fecha_oc'];		
+			$order_data['payment_obs'] = $this->session->data['payment_address']['obs'];
+				]]></add>
+		</operation>
+	</file>		
+	<file path="catalog/controller/checkout/guest.php">
+		<operation>
+			<search><![CDATA[$data['customer_group_id'] = $this->config->get('config_customer_group_id');]]></search>
+			<add position="replace" offset="1"><![CDATA[
+				$data['customer_group_id'] = $this->config->get('config_customer_group_id');
+		}
+				if (isset($this->session->data['guest']['boletaofactura'])) {
+			$data['boletaofactura'] = $this->session->data['guest']['boletaofactura'];
+		} else {
+			$data['boletaofactura'] = 'boleta';
+		}
+				
+		
+		if (isset($this->session->data['guest']['rut'])) {
+			$data['rut'] = $this->session->data['guest']['rut'];
+		} else {
+			$data['rut'] = '';
+		}
+		
+		if (isset($this->session->data['guest']['giro'])) {
+			$data['giro'] = $this->session->data['guest']['giro'];
+		} else {
+			$data['giro'] = '';
+		}
+		
+		if (isset($this->session->data['guest']['rsocial'])) {
+			$data['rsocial'] = $this->session->data['guest']['rsocial'];
+		} else {
+			$data['rsocial'] = '';
+		}		
+		
+		
+		if (isset($this->session->data['guest']['oc'])) {
+			$data['oc'] = $this->session->data['guest']['oc'];
+		} else {
+			$data['oc'] = '';
+		}
+		
+		if (isset($this->session->data['guest']['fecha_oc'])) {
+			$data['fecha_oc'] = $this->session->data['guest']['fecha_oc'];
+		} else {
+			$data['fecha_oc'] = '';
+		}
+		
+		if (isset($this->session->data['guest']['obs'])) {
+			$data['obs'] = $this->session->data['guest']['obs'];
+		} else {
+			$data['obs'] = '';
+		}
+				]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[if ((utf8_strlen(trim($this->request->post['firstname'])) < 1) || (utf8_strlen(trim($this->request->post['firstname'])) > 32)) {]]></search>
+			<add position="before"><![CDATA[
+			if ($this->request->post['boletaofactura'] == 'factura'){
+			if ((utf8_strlen(trim($this->request->post['rut'])) < 8) || (utf8_strlen(trim($this->request->post['rut'])) > 12)) {
+				$json['error']['rut'] = $this->language->get('error_rut');
+			}
+			
+			if ((utf8_strlen(trim($this->request->post['giro'])) < 5) || (utf8_strlen(trim($this->request->post['giro'])) > 40)) {
+				$json['error']['giro'] = $this->language->get('error_giro');
+			}
+			
+			if ((utf8_strlen(trim($this->request->post['rsocial'])) < 5) || (utf8_strlen(trim($this->request->post['rsocial'])) > 50)) {
+				$json['error']['rsocial'] = $this->language->get('error_rsocial');
+			}
+			
+			}
+				]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$this->session->data['payment_address']['firstname'] = $this->request->post['firstname'];]]></search>
+			<add position="before"><![CDATA[
+			$this->session->data['guest']['rut'] = $this->request->post['rut'];
+			$this->session->data['guest']['giro'] = $this->request->post['giro'];
+			$this->session->data['guest']['rsocial'] = $this->request->post['rsocial'];
+			$this->session->data['guest']['boletaofactura'] = $this->request->post['boletaofactura'];
+			$this->session->data['guest']['oc'] = $this->request->post['oc'];
+			$this->session->data['guest']['fecha_oc'] = $this->request->post['fecha_oc'];
+			$this->session->data['guest']['obs'] = $this->request->post['obs'];
+			
+			$this->session->data['payment_address']['rut'] = str_replace('.','',$this->request->post['rut']);
+			$this->session->data['payment_address']['rsocial'] = $this->request->post['rsocial'];
+			$this->session->data['payment_address']['giro'] = $this->request->post['giro'];
+			$this->session->data['payment_address']['boletaofactura'] = $this->request->post['boletaofactura'];
+			$this->session->data['payment_address']['oc'] = $this->request->post['oc'];
+			$this->session->data['payment_address']['fecha_oc'] = $this->request->post['fecha_oc'];
+			$this->session->data['payment_address']['obs'] = $this->request->post['obs'];
+				]]></add>
+		</operation>
+	</file>		
+	<file path="catalog/view/theme/default/template/checkout/guest.twig">
+		<operation>
+			<search><![CDATA[<input type="radio" name="customer_group_id" value="{{ customer_group.customer_group_id }}" />]]></search>
+			<add position="replace" offset="4"><![CDATA[
+            <input type="radio" name="customer_group_id" value="{{ customer_group.customer_group_id }}" />
+            {{ customer_group.name }}</label>
+        </div>
+        {% endif %}
+        {% endfor %}</div>
+		<div class="form-group required">
+		<label class="control-label">¿Necesita Boleta o Factura?</label>
+		<div class="radio">
+        <label>
+        <input type="radio" name="boletaofactura" value="boleta" {% if boletaofactura == 'boleta' %}checked="checked"{% endif %} />
+		Boleta
+		</label>
+        </div>
+		<div class="radio">
+        <label>
+        <input type="radio" name="boletaofactura" value="factura" {% if boletaofactura == 'factura' %}checked="checked"{% endif %} />
+		Factura
+		</label>
+        </div>
+		</div>
+		
+		<div class="form-group" id="datos-facturacion-rut">
+        <label class="control-label" for="input-payment-rut">RUT del Receptor</label>
+        <input type="text" name="rut" value="{{ rut }}" placeholder="Rut del receptor - opcional" id="input-payment-rut" class="form-control" />
+        </div>
+		
+		<div class="form-group" id="datos-facturacion-razon-social">
+        <label class="control-label" for="input-payment-rsocial">Razón Social</label>
+        <input type="text" name="rsocial" value="{{ rsocial }}" placeholder="Razón Social del Receptor - Opcional" id="input-payment-rsocial" class="form-control" maxlength="50" />
+        </div>
+		
+		<div class="form-group" id="datos-facturacion-giro">
+        <label class="control-label" for="input-payment-giro">Giro</label>
+        <input type="text" name="giro" value="{{ giro }}" placeholder="Giro - Opcional" id="input-payment-giro" class="form-control" maxlength="40" />
+        </div>
+		
+		<div class="form-group required" id="datos-facturacion-oc" {% if boletaofactura == 'boleta' %}style="display: none;"{% endif %}>
+		Orden de Compra y Fecha (Opcional)
+		<div class="row">
+		<div class="form-group col-xs-6">
+		<input type="text" name="oc" value="{{ oc }}" placeholder="Orden de Compra - Opcional" id="input-payment-oc" class="form-control" />
+		</div>
+		<div class="input-group date"> 
+		<input type="text" name="fecha_oc" value="{{ fecha_oc }}" placeholder="" data-date-format="YYYY-MM-DD" id="input-payment-oc-date" class="form-control" readonly />
+		<span class="input-group-btn">
+		<button class="btn btn-default" type="button" id="input-payment-oc-date-b"><i class="fa fa-calendar"></i></button>
+		</span>
+		</div>
+        </div>
+		</div>
+		<div class="form-group" id="datos-facturacion-obs" style="display: none;">
+        <label class="control-label" for="input-payment-obs">Observación (Opcional):</label>
+        <input type="text" name="obs" value="{{ obs }}" placeholder="Alguna Observación que quiere que aparezca en la Factura" id="input-payment-obs" class="form-control" maxlength="40" />
+        </div>
+
+		
+		<hr />
+				]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[// Sort the custom fields]]></search>
+			<add position="after"><![CDATA[
+	$(document).on('change', 'input[name=\'boletaofactura\']', function() {
+	if ($('input[name=\'boletaofactura\']:checked').val() == 'factura') {
+	$("input[name=\'rut\']").attr('placeholder','Rut del receptor');
+	$("#input-payment-rsocial").attr('placeholder','Ingrese la Razón Social de la Empresa');
+	$("#input-payment-giro").attr('placeholder','Giro');
+	$("#datos-facturacion-rut").attr('class','form-group required');
+	$("#datos-facturacion-giro").attr('class','form-group required');
+	$("#datos-facturacion-razon-social").attr('class','form-group required');
+	$("#datos-facturacion-obs").show();
+	$("#datos-facturacion-oc").show();
+	}
+	else
+	{
+	$("input[name=\'rut\']").attr('placeholder','Rut del receptor - Opcional');
+	$("#input-payment-rsocial").attr('placeholder','Nombre de la Empresa - Opcional');
+	$("#datos-facturacion-razon-social").attr('class','form-group');
+	$("#input-payment-giro").attr('placeholder','Giro - Opcional');
+	$("#datos-facturacion-rut").attr('class','form-group');
+	$("#datos-facturacion-giro").attr('class','form-group');
+	$("#datos-facturacion-obs").hide();
+	$("#datos-facturacion-oc").hide();
+	}
+});
+
+
+(function($)
+{
+  jQuery.fn.Rut = function(options)
+  {
+    var defaults = {
+      digito_verificador: null,
+      on_error: function(){},
+      on_success: function(){},
+      validation: true,
+      format: true,
+      format_on: 'change'
+    };
+
+    var opts = $.extend(defaults, options);
+
+    return this.each(function(){
+    
+      if(defaults.format)
+      {
+        jQuery(this).bind(defaults.format_on, function(){
+          jQuery(this).val(jQuery.Rut.formatear(jQuery(this).val(),defaults.digito_verificador==null));
+        });
+      }
+      if(defaults.validation)
+      {
+        if(defaults.digito_verificador == null)
+        {
+          jQuery(this).bind('blur', function(){
+            var rut = jQuery(this).val();
+            if(jQuery(this).val() != "" && !jQuery.Rut.validar(rut))
+            {
+                defaults.on_error();
+            }
+            else if(jQuery(this).val() != "")
+            {
+                defaults.on_success();
+            }
+          });
+        }
+        else
+        {
+          var id = jQuery(this).attr("id");
+          jQuery(defaults.digito_verificador).bind('blur', function(){
+            var rut = jQuery("#"+id).val()+"-"+jQuery(this).val();
+            if(jQuery(this).val() != "" && !jQuery.Rut.validar(rut))
+            {
+                defaults.on_error();
+            }
+            else if(jQuery(this).val() != "")
+            {
+                defaults.on_success();
+            }
+          });
+        }
+      }
+    });
+  }
+})(jQuery);
+
+/**
+  Funciones
+*/
+
+
+jQuery.Rut = {
+
+  formatear:  function(Rut, digitoVerificador)
+          {
+          var sRut = new String(Rut);
+          var sRutFormateado = '';
+          sRut = jQuery.Rut.quitarFormato(sRut);
+          if(digitoVerificador){
+            var sDV = sRut.charAt(sRut.length-1);
+            sRut = sRut.substring(0, sRut.length-1);
+          }
+          while( sRut.length > 3 )
+          {
+            sRutFormateado = "." + sRut.substr(sRut.length - 3) + sRutFormateado;
+            sRut = sRut.substring(0, sRut.length - 3);
+          }
+          sRutFormateado = sRut + sRutFormateado;
+          if(sRutFormateado != "" && digitoVerificador)
+          {
+            sRutFormateado += "-"+sDV;
+          }
+          else if(digitoVerificador)
+          {
+            sRutFormateado += sDV;
+          }
+          
+          return sRutFormateado;
+        },
+
+  quitarFormato: function(rut)
+        {
+          var strRut = new String(rut);
+          while( strRut.indexOf(".") != -1 )
+          {
+          strRut = strRut.replace(".","");
+          }
+          while( strRut.indexOf("-") != -1 )
+          {
+          strRut = strRut.replace("-","");
+          }
+          
+          return strRut;
+        },
+
+  digitoValido: function(dv)
+        { 
+          if ( dv != '0' && dv != '1' && dv != '2' && dv != '3' && dv != '4' 
+            && dv != '5' && dv != '6' && dv != '7' && dv != '8' && dv != '9' 
+            && dv != 'k'  && dv != 'K')
+          {   
+            return false; 
+          } 
+          return true;
+        },
+
+  digitoCorrecto:   function(crut)
+          { 
+            largo = crut.length;
+            if ( largo < 2 )  
+            {   
+              return false; 
+            }
+            if(largo > 2)
+            {
+              rut = crut.substring(0, largo - 1);
+            }
+            else
+            {   
+              rut = crut.charAt(0);
+            }
+            dv = crut.charAt(largo-1);
+            jQuery.Rut.digitoValido(dv);  
+          
+            if(rut == null || dv == null)
+            {
+              return 0;
+            }
+
+            dvr = jQuery.Rut.getDigito(rut);
+
+            if (dvr != dv.toLowerCase())  
+            {   
+              return false;
+            }
+            return true;
+          },
+
+  getDigito:    function(rut)
+        {
+          var dvr = '0';
+          suma = 0;
+          mul  = 2;
+          for(i=rut.length -1;i >= 0;i--) 
+          { 
+            suma = suma + rut.charAt(i) * mul;    
+            if (mul == 7)
+            {
+              mul = 2;
+            }   
+            else
+            {         
+              mul++;
+            } 
+          }
+          res = suma % 11;  
+          if (res==1)
+          {
+            return 'k';
+          } 
+          else if(res==0)
+          {   
+            return '0';
+          } 
+          else  
+          {   
+            return 11-res;
+          }
+        },
+
+  validar:   function(texto)
+        {
+          texto = jQuery.Rut.quitarFormato(texto);
+          largo = texto.length;
+        
+          // rut muy corto
+          if ( largo < 2 )  
+          {
+            return false; 
+          }
+    
+          // verifica que los numeros correspondan a los de rut
+          for (i=0; i < largo ; i++ ) 
+          {   
+            // numero o letra que no corresponda a los del rut
+            if(!jQuery.Rut.digitoValido(texto.charAt(i)))
+            {     
+              return false;
+            }
+          }
+    
+          var invertido = "";
+          for(i=(largo-1),j=0; i>=0; i--,j++)
+          {
+            invertido = invertido + texto.charAt(i);
+          }
+          var dtexto = "";
+          dtexto = dtexto + invertido.charAt(0);
+          dtexto = dtexto + '-';  
+          cnt = 0;  
+        
+          for ( i=1,j=2; i<largo; i++,j++ ) 
+          {
+            if ( cnt == 3 )   
+            {     
+              dtexto = dtexto + '.';      
+              j++;      
+              dtexto = dtexto + invertido.charAt(i);      
+              cnt = 1;    
+            }
+            else    
+            {       
+              dtexto = dtexto + invertido.charAt(i);      
+              cnt++;    
+            } 
+          } 
+        
+          invertido = ""; 
+          for (i=(dtexto.length-1),j=0; i>=0; i--,j++)
+          {   
+            invertido = invertido + dtexto.charAt(i);
+          }
+    
+          if (jQuery.Rut.digitoCorrecto(texto))
+          {   
+            return true;
+          }
+          return false;
+        }
+};
+
+	$('#input-payment-rut').Rut({
+		on_error: function(){
+			alert('El rut ingresado es incorrecto');$('#input-payment-rut').val('');$('#input-payment-rut').focus(); 
+		},
+       format_on: 'keyup' 
+	});
+
+	
+	
+function getContribuyente(){
+
+var rutjs = $("#input-payment-rut").val();
+rutjs = rutjs.replace('.','');
+rutjs = rutjs.replace('.','');
+
+
+if (rutjs.length >= 9){
+$.ajax({url: "index.php?route=libredte/contribuyente&rut=" + rutjs, type : 'GET', dataType: "text", success: function(result){
+        $("#input-payment-rsocial").val(result);
+    }});	
+
+}
+
+	
+}
+
+$('#input-payment-rut').blur(function(){
+getContribuyente();
+});	
+				]]></add>
+		</operation>		
+	</file>		
+	<file path="catalog/model/checkout/order.php">
+		<operation>
+			<search><![CDATA[$order_id = $this->db->getLastId();]]></search>
+			<add position="after"><![CDATA[
+			$this->db->query("INSERT INTO `" . DB_PREFIX . "libredte` SET order_id = '" . $order_id . "', boletaofactura = '" . $this->db->escape($data['payment_boletaofactura']) . "', rut = '" . $this->db->escape($data['payment_rut']) . "', rsocial = '" . $this->db->escape($data['payment_rsocial']) . "', giro = '" . $this->db->escape($data['payment_giro']) . "', oc = '" . $this->db->escape($data['payment_oc']) . "', fecha_oc = '" . $this->db->escape($data['payment_fecha_oc']) . "', obs = '" . $this->db->escape($data['payment_obs']) . "', mail_sent = 0");
+				]]></add>
+		</operation>
+	</file>		
+	<file path="admin/view/template/sale/order_info.twig">
+		<operation>
+			<search><![CDATA[<div class="pull-right"><a href="{{ invoice }}" target="_blank" data-toggle="tooltip" title="{{ button_invoice_print }}" class="btn btn-info"><i class="fa fa-print"></i></a> <a href="{{ shipping }}" target="_blank" data-toggle="tooltip" title="{{ button_shipping_print }}" class="btn btn-info"><i class="fa fa-truck"></i></a> <a href="{{ edit }}" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary"><i class="fa fa-pencil"></i></a> <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a></div>]]></search>
+			<add position="replace"><![CDATA[
+			<div class="pull-right"><a href="{{ invoice }}" target="_self" data-toggle="tooltip" title="{{ button_invoice_print }}" class="btn btn-info"><i class="fa fa-print"></i></a> <a href="{{ shipping }}" target="_blank" data-toggle="tooltip" title="{{ button_shipping_print }}" class="btn btn-info"><i class="fa fa-truck"></i></a> <a href="{{ edit }}" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary"><i class="fa fa-pencil"></i></a> <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a></div>
+				]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<button id="button-invoice" data-loading-text="{{ text_loading }}" data-toggle="tooltip" title="{{ button_generate }}" class="btn btn-success btn-xs"><i class="fa fa-cog"></i></button>]]></search>
+			<add position="replace" offset="4"><![CDATA[
+			   <button id="button-invoice" data-loading-text="{{ text_loading }}" data-toggle="tooltip" title="{{ button_generate }}" class="btn btn-success btn-xs"><i class="fa fa-cog"></i></button>
+                  {% else %}
+                  <button disabled="disabled" class="btn btn-success btn-xs"><i class="fa fa-refresh"></i></button>
+                  {% endif %}</td>
+              </tr>
+			   <tr>
+                <td>Enviar DTE por Email</td>
+                <td id="estado" class="text-right">{{ enviado }}</td>
+                <td style="width: 1%;" class="text-center">{% if (invoice_no and not mailenviado) %}
+                  <button id="button-email" data-loading-text="Enviando" data-toggle="tooltip" title="Enviar" class="btn btn-success btn-xs"><i class="fa fa-cog"></i></button>
+               		{% else %}
+                  <button id="button-email" disabled="disabled" class="btn btn-success btn-xs"><i class="fa fa-refresh"></i></button>
+                     {% endif %}</td>
+               </tr>		
+				]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$(document).delegate('#button-invoice', 'click', function() {]]></search>
+			<add position="replace" offset="27"><![CDATA[
+	$(document).delegate('#button-invoice', 'click', function() {
+	$.ajax({
+		url: 'index.php?route=sale/order/createinvoiceno&user_token={{ user_token }}&order_id={{ order_id }}',
+		dataType: 'html',
+		beforeSend: function() {
+			$('#button-invoice').button('loading');
+		},
+		complete: function() {
+			$('#button-invoice').button('reset');
+		},
+		success: function(html) {
+			$('.alert-dismissible').remove();
+			
+				$('#invoice').html(html);
+
+				$('#button-invoice').replaceWith('<button id="button-invoice" disabled="disabled" class="btn btn-success btn-xs"><i class="fa fa-cog"></i></button>');
+				$('#button-email').replaceWith('<button id="button-email" data-loading-text="Enviando" data-toggle="tooltip" title="Enviar" class="btn btn-success btn-xs"><i class="fa fa-cog"></i></button>');
+          		$('#estado').html('No Enviado');
+		},
+		error: function(xhr, ajaxOptions, thrownError) {
+			alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+		}
+	});
+});
+
+
+$(document).delegate('#button-email', 'click', function() {
+	$.ajax({
+		url: 'index.php?route=sale/order/sendmail&user_token={{ user_token }}&order_id={{ order_id }}',
+		dataType: 'html',
+		beforeSend: function() {
+			$('#button-email').button('loading');
+		},
+		complete: function() {
+			$('#button-email').button('reset');
+		},
+		success: function(html) {
+			$('.alert-dismissible').remove();
+			
+				$('#estado').html(html);
+
+				$('#button-email').replaceWith('<button id="button-email" disabled="disabled" class="btn btn-success btn-xs"><i class="fa fa-cog"></i></button>');
+			
+		},
+		error: function(xhr, ajaxOptions, thrownError) {
+			alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+		}
+	});
+});
+				]]></add>
+		</operation>
+	</file>		
+	<file path="catalog/controller/checkout/payment_address.php">
+		<operation>
+			<search><![CDATA[$data['zone_id'] = '';]]></search>
+			<add position="replace" offset="1"><![CDATA[
+			$data['zone_id'] = '';
+			}
+		if (isset($this->session->data['payment_address']['boletaofactura'])) {
+			$data['boletaofactura'] = $this->session->data['payment_address']['boletaofactura'];
+		} else {
+			$data['boletaofactura'] = 'boleta';
+		}
+				
+		
+		if (isset($this->session->data['payment_address']['rut'])) {
+			$data['rut'] = $this->session->data['payment_address']['rut'];
+		} else {
+			$data['rut'] = '';
+		}
+		
+		if (isset($this->session->data['payment_address']['giro'])) {
+			$data['giro'] = $this->session->data['payment_address']['giro'];
+		} else {
+			$data['giro'] = '';
+		}
+		
+		if (isset($this->session->data['payment_address']['rsocial'])) {
+			$data['rsocial'] = $this->session->data['payment_address']['rsocial'];
+		} else {
+			$data['rsocial'] = '';
+		}
+		
+		
+		if (isset($this->session->data['payment_address']['oc'])) {
+			$data['oc'] = $this->session->data['payment_address']['oc'];
+		} else {
+			$data['oc'] = '';
+		}
+		
+		if (isset($this->session->data['payment_address']['fecha_oc'])) {
+			$data['fecha_oc'] = $this->session->data['payment_address']['fecha_oc'];
+		} else {
+			$data['fecha_oc'] = '';
+		}
+		
+		if (isset($this->session->data['payment_address']['obs'])) {
+			$data['obs'] = $this->session->data['payment_address']['obs'];
+		} else {
+			$data['obs'] = '';
+		}
+		
+				]]></add>
+		</operation>	
+		<operation>
+			<search><![CDATA[} elseif (!in_array($this->request->post['address_id'], array_keys($this->model_account_address->getAddresses()))) {]]></search>
+			<add position="replace" offset="2"><![CDATA[
+			} elseif (!in_array($this->request->post['address_id'], array_keys($this->model_account_address->getAddresses()))) {
+					$json['error']['warning'] = $this->language->get('error_address');
+				}
+					
+			if ($this->request->post['boletaofactura'] == 'factura'){
+			if ((utf8_strlen(trim($this->request->post['rut'])) < 8) || (utf8_strlen(trim($this->request->post['rut'])) > 12)) {
+				$json['error']['rut'] = $this->language->get('error_rut');
+			}
+			
+			if ((utf8_strlen(trim($this->request->post['giro'])) < 5) || (utf8_strlen(trim($this->request->post['giro'])) > 40)) {
+				$json['error']['giro'] = $this->language->get('error_giro');
+			}
+			
+			if ((utf8_strlen(trim($this->request->post['rsocial'])) < 5) || (utf8_strlen(trim($this->request->post['rsocial'])) > 50)) {
+				$json['error']['rsocial'] = $this->language->get('error_rsocial');
+			}
+						
+			}
+				]]></add>
+		</operation>		
+		<operation>
+			<search><![CDATA[if ((utf8_strlen(trim($this->request->post['firstname'])) < 1) || (utf8_strlen(trim($this->request->post['firstname'])) > 32)) {]]></search>
+			<add position="before"><![CDATA[
+			if ($this->request->post['boletaofactura'] == 'factura'){
+			if ((utf8_strlen(trim($this->request->post['rut'])) < 8) || (utf8_strlen(trim($this->request->post['rut'])) > 12)) {
+				$json['error']['rut'] = $this->language->get('error_rut');
+			}
+			
+			if ((utf8_strlen(trim($this->request->post['giro'])) < 5) || (utf8_strlen(trim($this->request->post['giro'])) > 40)) {
+				$json['error']['giro'] = $this->language->get('error_giro');
+			}
+			
+			if ((utf8_strlen(trim($this->request->post['rsocial'])) < 5) || (utf8_strlen(trim($this->request->post['rsocial'])) > 50)) {
+				$json['error']['rsocial'] = $this->language->get('error_rsocial');
+			}
+						
+			}
+				]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$this->response->addHeader('Content-Type: application/json');]]></search>
+			<add position="before"><![CDATA[
+			$this->session->data['payment_address']['rut'] = str_replace('.','',$this->request->post['rut']);
+			$this->session->data['payment_address']['rsocial'] = $this->request->post['rsocial'];
+			$this->session->data['payment_address']['giro'] = $this->request->post['giro'];
+			$this->session->data['payment_address']['boletaofactura'] = $this->request->post['boletaofactura'];
+			
+			$this->session->data['payment_address']['oc'] = $this->request->post['oc'];
+			$this->session->data['payment_address']['fecha_oc'] = $this->request->post['fecha_oc'];
+			$this->session->data['payment_address']['obs'] = $this->request->post['obs'];
+				]]></add>
+		</operation>
+	</file>		
+	<file path="catalog/view/theme/default/template/checkout/payment_address.twig">
+		<operation>
+			<search><![CDATA[<div id="payment-new" style="display: {% if addresses %}none{% else %}block{% endif %};">]]></search>
+			<add position="before"><![CDATA[
+  <br />
+  
+
+   		<div class="form-group required">
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label class="control-label"><b>¿Necesita Boleta o Factura?</b></label>
+		<div class="radio">
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label>
+        <input type="radio" name="boletaofactura" value="boleta" {% if boletaofactura == 'boleta' %}checked="checked"{% endif %} />
+		Boleta
+		</label>
+        </div>
+		<div class="radio">
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label>
+        <input type="radio" name="boletaofactura" value="factura" {% if boletaofactura == 'factura' %}checked="checked"{% endif %} />
+		Factura
+		</label>
+        </div>
+		</div>
+		
+		<div class="form-group" id="datos-facturacion-rut">
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label class="control-label" for="input-payment-rut">RUT del Receptor</label>
+        <input type="text" name="rut" value="{{ rut }}" placeholder="Rut del receptor - opcional" id="input-payment-rut" class="form-control" />
+        </div>
+		
+		<div class="form-group" id="datos-facturacion-razon-social">
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label class="control-label" for="input-payment-rsocial">Razón Social</label>
+        <input type="text" name="rsocial" value="{{ rsocial }}" placeholder="Razón Social del Receptor - Opcional" id="input-payment-rsocial" class="form-control" maxlength="50" />
+        </div>
+		
+		<div class="form-group" id="datos-facturacion-giro">
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label class="control-label" for="input-payment-giro">Giro</label>
+        <input type="text" name="giro" value="{{ giro }}" placeholder="Giro - Opcional" id="input-payment-giro" class="form-control" maxlength="40" />
+        </div>
+		
+		<div class="form-group required" id="datos-facturacion-oc" {% if boletaofactura == 'boleta' %}style="display: none;"{% endif %}>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Orden de Compra y Fecha (Opcional)
+		<div class="row form-group">
+		<div class="form-group col-xs-3">
+		<input type="text" name="oc" value="{{ oc }}" placeholder="Orden de Compra - Opcional" id="input-payment-oc" class="form-control" />
+		</div>
+		<div class="input-group date col-xs-3"> 
+		<input type="text" name="fecha_oc" value="{{ fecha_oc }}" placeholder="" data-date-format="YYYY-MM-DD" id="input-payment-oc-date" class="form-control" readonly />
+		<span class="input-group-btn">
+		<button class="btn btn-default" type="button" id="input-payment-oc-date-b"><i class="fa fa-calendar"></i></button>
+		</span>
+		</div>
+        </div>	
+		</div>
+		
+		<div class="form-group" id="datos-facturacion-obs" style="display: none;">
+        <label class="control-label" for="input-payment-obs">Observación (Opcional):</label>
+        <input type="text" name="obs" value="{{ obs }}" placeholder="Alguna Observación que quiere que aparezca en la Factura o Boleta" id="input-payment-obs" class="form-control" maxlength="40" />
+        </div>		
+				]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[// Sort the custom fields]]></search>
+			<add position="after"><![CDATA[
+	$(document).on('change', 'input[name=\'boletaofactura\']', function() {
+	if ($('input[name=\'boletaofactura\']:checked').val() == 'factura') {
+	$("input[name=\'rut\']").attr('placeholder','Rut del receptor');
+	$("#input-payment-rsocial").attr('placeholder','Ingrese la Razón Social de la Empresa');
+	$("#input-payment-giro").attr('placeholder','Giro');
+	$("#datos-facturacion-rut").attr('class','form-group required');
+	$("#datos-facturacion-giro").attr('class','form-group required');
+	$("#datos-facturacion-razon-social").attr('class','form-group required');
+	$("#datos-facturacion-obs").show();
+	$("#datos-facturacion-oc").show();
+	}
+	else
+	{
+	$("input[name=\'rut\']").attr('placeholder','Rut del receptor - Opcional');
+	$("#input-payment-rsocial").attr('placeholder','Nombre de la Empresa - Opcional');
+	$("#datos-facturacion-razon-social").attr('class','form-group');
+	$("#input-payment-giro").attr('placeholder','Giro - Opcional');
+	$("#datos-facturacion-rut").attr('class','form-group');
+	$("#datos-facturacion-giro").attr('class','form-group');
+	$("#datos-facturacion-obs").hide();
+	$("#datos-facturacion-oc").hide();
+	}
+});
+
+
+
+(function($)
+{
+  jQuery.fn.Rut = function(options)
+  {
+    var defaults = {
+      digito_verificador: null,
+      on_error: function(){},
+      on_success: function(){},
+      validation: true,
+      format: true,
+      format_on: 'change'
+    };
+
+    var opts = $.extend(defaults, options);
+
+    return this.each(function(){
+    
+      if(defaults.format)
+      {
+        jQuery(this).bind(defaults.format_on, function(){
+          jQuery(this).val(jQuery.Rut.formatear(jQuery(this).val(),defaults.digito_verificador==null));
+        });
+      }
+      if(defaults.validation)
+      {
+        if(defaults.digito_verificador == null)
+        {
+          jQuery(this).bind('blur', function(){
+            var rut = jQuery(this).val();
+            if(jQuery(this).val() != "" && !jQuery.Rut.validar(rut))
+            {
+                defaults.on_error();
+            }
+            else if(jQuery(this).val() != "")
+            {
+                defaults.on_success();
+            }
+          });
+        }
+        else
+        {
+          var id = jQuery(this).attr("id");
+          jQuery(defaults.digito_verificador).bind('blur', function(){
+            var rut = jQuery("#"+id).val()+"-"+jQuery(this).val();
+            if(jQuery(this).val() != "" && !jQuery.Rut.validar(rut))
+            {
+                defaults.on_error();
+            }
+            else if(jQuery(this).val() != "")
+            {
+                defaults.on_success();
+            }
+          });
+        }
+      }
+    });
+  }
+})(jQuery);
+
+/**
+  Funciones
+*/
+
+
+jQuery.Rut = {
+
+  formatear:  function(Rut, digitoVerificador)
+          {
+          var sRut = new String(Rut);
+          var sRutFormateado = '';
+          sRut = jQuery.Rut.quitarFormato(sRut);
+          if(digitoVerificador){
+            var sDV = sRut.charAt(sRut.length-1);
+            sRut = sRut.substring(0, sRut.length-1);
+          }
+          while( sRut.length > 3 )
+          {
+            sRutFormateado = "." + sRut.substr(sRut.length - 3) + sRutFormateado;
+            sRut = sRut.substring(0, sRut.length - 3);
+          }
+          sRutFormateado = sRut + sRutFormateado;
+          if(sRutFormateado != "" && digitoVerificador)
+          {
+            sRutFormateado += "-"+sDV;
+          }
+          else if(digitoVerificador)
+          {
+            sRutFormateado += sDV;
+          }
+          
+          return sRutFormateado;
+        },
+
+  quitarFormato: function(rut)
+        {
+          var strRut = new String(rut);
+          while( strRut.indexOf(".") != -1 )
+          {
+          strRut = strRut.replace(".","");
+          }
+          while( strRut.indexOf("-") != -1 )
+          {
+          strRut = strRut.replace("-","");
+          }
+          
+          return strRut;
+        },
+
+  digitoValido: function(dv)
+        { 
+          if ( dv != '0' && dv != '1' && dv != '2' && dv != '3' && dv != '4' 
+            && dv != '5' && dv != '6' && dv != '7' && dv != '8' && dv != '9' 
+            && dv != 'k'  && dv != 'K')
+          {   
+            return false; 
+          } 
+          return true;
+        },
+
+  digitoCorrecto:   function(crut)
+          { 
+            largo = crut.length;
+            if ( largo < 2 )  
+            {   
+              return false; 
+            }
+            if(largo > 2)
+            {
+              rut = crut.substring(0, largo - 1);
+            }
+            else
+            {   
+              rut = crut.charAt(0);
+            }
+            dv = crut.charAt(largo-1);
+            jQuery.Rut.digitoValido(dv);  
+          
+            if(rut == null || dv == null)
+            {
+              return 0;
+            }
+
+            dvr = jQuery.Rut.getDigito(rut);
+
+            if (dvr != dv.toLowerCase())  
+            {   
+              return false;
+            }
+            return true;
+          },
+
+  getDigito:    function(rut)
+        {
+          var dvr = '0';
+          suma = 0;
+          mul  = 2;
+          for(i=rut.length -1;i >= 0;i--) 
+          { 
+            suma = suma + rut.charAt(i) * mul;    
+            if (mul == 7)
+            {
+              mul = 2;
+            }   
+            else
+            {         
+              mul++;
+            } 
+          }
+          res = suma % 11;  
+          if (res==1)
+          {
+            return 'k';
+          } 
+          else if(res==0)
+          {   
+            return '0';
+          } 
+          else  
+          {   
+            return 11-res;
+          }
+        },
+
+  validar:   function(texto)
+        {
+          texto = jQuery.Rut.quitarFormato(texto);
+          largo = texto.length;
+        
+          // rut muy corto
+          if ( largo < 2 )  
+          {
+            return false; 
+          }
+    
+          // verifica que los numeros correspondan a los de rut
+          for (i=0; i < largo ; i++ ) 
+          {   
+            // numero o letra que no corresponda a los del rut
+            if(!jQuery.Rut.digitoValido(texto.charAt(i)))
+            {     
+              return false;
+            }
+          }
+    
+          var invertido = "";
+          for(i=(largo-1),j=0; i>=0; i--,j++)
+          {
+            invertido = invertido + texto.charAt(i);
+          }
+          var dtexto = "";
+          dtexto = dtexto + invertido.charAt(0);
+          dtexto = dtexto + '-';  
+          cnt = 0;  
+        
+          for ( i=1,j=2; i<largo; i++,j++ ) 
+          {
+            if ( cnt == 3 )   
+            {     
+              dtexto = dtexto + '.';      
+              j++;      
+              dtexto = dtexto + invertido.charAt(i);      
+              cnt = 1;    
+            }
+            else    
+            {       
+              dtexto = dtexto + invertido.charAt(i);      
+              cnt++;    
+            } 
+          } 
+        
+          invertido = ""; 
+          for (i=(dtexto.length-1),j=0; i>=0; i--,j++)
+          {   
+            invertido = invertido + dtexto.charAt(i);
+          }
+    
+          if (jQuery.Rut.digitoCorrecto(texto))
+          {   
+            return true;
+          }
+          return false;
+        }
+};
+
+	$('#input-payment-rut').Rut({
+		on_error: function(){
+			alert('El rut ingresado es incorrecto');$('#input-payment-rut').val('');$('#input-payment-rut').focus(); 
+		},
+       format_on: 'keyup' 
+	});
+
+	
+function getContribuyente(){
+
+var rutjs = $("#input-payment-rut").val();
+rutjs = rutjs.replace('.','');
+rutjs = rutjs.replace('.','');
+
+
+if (rutjs.length >= 9){
+$.ajax({url: "index.php?route=libredte/contribuyente&rut=" + rutjs, type : 'GET', dataType: "text", success: function(result){
+        $("#input-payment-rsocial").val(result);
+    }});	
+
+}
+
+	
+}
+
+$('#input-payment-rut').blur(function(){
+getContribuyente();
+});	
+				]]></add>
+		</operation>
+	</file>		
 </modification>
