@@ -1020,10 +1020,10 @@ $(document).delegate('#button-email', 'click', function() {
 		<div class="form-group required" id="datos-facturacion-oc" {% if boletaofactura == 'boleta' %}style="display: none;"{% endif %}>
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Orden de Compra y Fecha (Opcional)
 		<div class="row form-group">
-		<div class="form-group col-xs-3">
+		<div class="form-group col-xs-10 col-sm-2">
 		<input type="text" name="oc" value="{{ oc }}" placeholder="Orden de Compra - Opcional" id="input-payment-oc" class="form-control" />
 		</div>
-		<div class="input-group date col-xs-3"> 
+		<div class="input-group date col-xs-10 col-sm-2"> 
 		<input type="text" name="fecha_oc" value="{{ fecha_oc }}" placeholder="" data-date-format="YYYY-MM-DD" id="input-payment-oc-date" class="form-control" readonly />
 		<span class="input-group-btn">
 		<button class="btn btn-default" type="button" id="input-payment-oc-date-b"><i class="fa fa-calendar"></i></button>
