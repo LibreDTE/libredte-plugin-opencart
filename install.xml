@@ -1341,5 +1341,21 @@ getContribuyente();
 });	
 				]]></add>
 		</operation>
-	</file>		
+	</file>			
+	<file path="catalog/view/theme/default/template/checkout/checkout.twig">
+		<operation>
+			<search index="1"><![CDATA[$('#collapse-shipping-address').parent().find('.panel-heading .panel-title').html('<a href="#collapse-shipping-address" data-toggle="collapse" data-parent="#accordion" class="accordion-toggle">{{ text_checkout_shipping_address }} <i class="fa fa-caret-down"></i></a>');]]></search>
+			<add position="replace" offset="2"><![CDATA[
+			$('#collapse-payment-address').parent().find('.panel-heading .panel-title').html('<a href="#collapse-payment-address" data-toggle="collapse" data-parent="#accordion" class="accordion-toggle">{{ text_checkout_payment_address }} <i class="fa fa-caret-down"></i></a>');			
+			$('input[name=\'payment_address\']').focus();
+			]]></add>
+		</operation>
+		<operation>
+			<search index="0"><![CDATA[$('#collapse-payment-method').parent().find('.panel-heading .panel-title').html('<a href="#collapse-payment-method" data-toggle="collapse" data-parent="#accordion" class="accordion-toggle">{{ text_checkout_payment_method }} <i class="fa fa-caret-down"></i></a>');]]></search>
+			<add position="replace" offset="2"><![CDATA[
+			$('#collapse-payment-address').parent().find('.panel-heading .panel-title').html('<a href="#collapse-payment-address" data-toggle="collapse" data-parent="#accordion" class="accordion-toggle">{{ text_checkout_payment_address }} <i class="fa fa-caret-down"></i></a>');
+			$('input[name=\'payment_address\']').focus();	
+				]]></add>
+		</operation>		
+	</file>				
 </modification>
