@@ -9,7 +9,13 @@
 		<operation>
 			<search><![CDATA[$data['invoice'] = $this->url->link('sale/order/invoice', 'user_token=' . $this->session->data['user_token'] . '&order_id=' . (int)$this->request->get['order_id'], true);]]></search>
 			<add position="replace"><![CDATA[
-
+			if (isset($this->request->get['resultado'])){
+			$data['resultado'] = $this->request->get['resultado'];
+			}
+			else
+			{
+			$data['resultado'] = 0;
+			}
 				]]></add>
 		</operation>
 		<operation>
@@ -139,7 +145,7 @@
 			$mask = DIR_UPLOAD . "dte_*.pdf";
 			array_map( "unlink", glob( $mask ) );
 			}
-			$this->response->redirect($this->url->link('sale/order/info', 'user_token=' . $this->session->data['user_token'] . '&order_id=' . $order_id, true));
+			$this->response->redirect($this->url->link('sale/order/info', 'user_token=' . $this->session->data['user_token'] . '&order_id=' . $order_id . '&resultado=1', true));
 	
 		}
 				]]></add>
@@ -795,6 +801,20 @@ getContribuyente();
 			<search><![CDATA[<div class="pull-right"><a href="{{ invoice }}" target="_blank" data-toggle="tooltip" title="{{ button_invoice_print }}" class="btn btn-info"><i class="fa fa-print"></i></a> <a href="{{ shipping }}" target="_blank" data-toggle="tooltip" title="{{ button_shipping_print }}" class="btn btn-info"><i class="fa fa-truck"></i></a> <a href="{{ edit }}" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary"><i class="fa fa-pencil"></i></a> <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a></div>]]></search>
 			<add position="replace"><![CDATA[
 			<div class="pull-right"><a href="{{ invoice }}" target="_self" data-toggle="tooltip" title="{{ button_invoice_print }}" class="btn btn-info"><i class="fa fa-print"></i></a> <a href="{{ shipping }}" target="_blank" data-toggle="tooltip" title="{{ button_shipping_print }}" class="btn btn-info"><i class="fa fa-truck"></i></a> <a href="{{ edit }}" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary"><i class="fa fa-pencil"></i></a> <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a></div>
+				]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[{% for breadcrumb in breadcrumbs %}]]></search>
+			<add position="replace" offset="5"><![CDATA[
+		{% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% if resultado == 1 %}
+  <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> Documento Enviado a la Impresora! <button type="button" class="close" data-dismiss="alert">&times;</button></div>
+  {% endif %}
 				]]></add>
 		</operation>
 		<operation>
