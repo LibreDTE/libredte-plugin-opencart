@@ -311,7 +311,7 @@
 			<add position="before"><![CDATA[
 $_['error_rut']               		 = 'El Rut Ingresado es incorrecto!';
 $_['error_giro']              	     = 'El giro debe tener entre 5 y 40 caracteres!';
-$_['error_rsocial']           	     = 'La Razón Social debe tener entre 5 y 40 caracteres!';
+$_['error_rsocial']           	     = 'La Razón Social debe tener entre 5 y 50 caracteres!';
 ]]></add>
 		</operation>
 	</file>	

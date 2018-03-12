@@ -24,8 +24,9 @@ $datos = $this->libredte->get($libredte_info['module_libredte_url'] . '/api/dte/
 
 if ($datos['status']['code'] == "200") {        
 // enviar respuesta al cliente
+$rsocial = substr($datos['body']['razon_social'],0,50);
 $this->response->addHeader('Content-Type: text/plain');
-$this->response->setOutput($datos['body']['razon_social']);           
+$this->response->setOutput($rsocial);           
 }      
 else if ($datos['status']['code'] == "404") {  
 // enviar respuesta al cliente
