@@ -26,7 +26,7 @@
  * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
  * @version 2016-01-25
  */
-class ModelLibredteProduct extends Model
+class ModelExtensionLibredteProduct extends Model
 {
 
     /**

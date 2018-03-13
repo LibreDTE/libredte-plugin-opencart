@@ -25,6 +25,15 @@
  * Controlador para trabajar con los productos de OpenCart
  * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
  * @version 2016-01-23
+ 
+ Para configurar la lectura de códigos desde la plataforma LibreDTE, 
+ estamos usando el SKU del producto.
+ Se debe configurar la URL:
+ http://www.mitienda.cl/index.php?route=libredte/product&codigo=
+ Por ejemplo
+ http://altronicschile.cl/index.php?route=libredte/product&codigo=
+ 
+ 
  */
 class ControllerLibredteProduct extends Controller
 {
@@ -41,36 +50,26 @@ class ControllerLibredteProduct extends Controller
         // solo procesar si es una consulta por POST
         if ($this->request->server['REQUEST_METHOD'] == 'GET') {
             // columna que se usará para identificar al producto
-            if (isset($this->request->get['column'])) {
-                $column = $this->request->get['column'];
-            } else {
-                $column = 'product_id';
-            }
-            // recuperar ID del producto
-            if (isset($this->request->get['product_id'])) {
-                if ($column != 'product_id') {
-                    $this->load->model('libredte/product');
-                    $product_id = $this->model_libredte_product->getProductId(
-                        $this->request->get['product_id'], $column
-                    );
-                } else {
-                    $product_id = (int)$this->request->get['product_id'];
-                }
-            } else {
-                $product_id = 0;
-            }
+  
+         $product_code = $this->config->get('module_libredte_producto_codigo'); 
+          
+          $result = $this->db->query("SELECT `product_id` FROM `".DB_PREFIX."product` WHERE " . $product_code . " = '" . $this->request->get['codigo'] . "'");
+          if ($result->num_rows){
+          $product_id = $result->row['product_id'];
+          }
+          
             // obtener datos del producto
             $this->load->model('catalog/product');
             $product_info = $this->model_catalog_product->getProduct($product_id);
             if ($product_info) {
                 $item = [
                     'TpoCodigo' => 'INT1',
-                    'VlrCodigo' => substr($this->request->get['product_id'], 0, 35),
+                    'VlrCodigo' => substr($this->request->get['codigo'], 0, 35),
                     'NmbItem' => substr($product_info['name'], 0, 80),
-                    'DscItem' => substr($product_info['meta_description'], 0, 1000),
-                    'IndExe' => $product_info['tax_class_id'] ? 0 : 1,
-                    'UnmdItem' => substr('', 0, 4),
-                    'PrcItem' => round($product_info['price']),
+                    'DscItem' => '',
+                    'IndExe' => $product_info['tax_class_id'] ? 0 : 0,
+                    'UnmdItem' => 'ud.',
+                    'PrcItem' => round($product_info['price'] / 1.19),
                     'ValorDR' => $product_info['special'] ? round($product_info['price']-$product_info['special']) : 0,
                     'TpoValor' => '$',
                 ];
