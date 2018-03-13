@@ -475,7 +475,7 @@ $_['error_rsocial']           	     = 'La Razón Social debe tener entre 5 y 50 
 		</div>
         </div>
 		</div>
-		<div class="form-group" id="datos-facturacion-obs" style="display: none;">
+		<div class="form-group" id="datos-facturacion-obs" {% if boletaofactura == 'boleta' %}style="display: none;"{% endif %}>
         <label class="control-label" for="input-payment-obs">Observación (Opcional):</label>
         <input type="text" name="obs" value="{{ obs }}" placeholder="Alguna Observación que quiere que aparezca en la Factura" id="input-payment-obs" class="form-control" maxlength="40" />
         </div>
@@ -1052,9 +1052,9 @@ $(document).delegate('#button-email', 'click', function() {
         </div>	
 		</div>
 		
-		<div class="form-group" id="datos-facturacion-obs" style="display: none;">
+		<div class="form-group" id="datos-facturacion-obs" {% if boletaofactura == 'boleta' %}style="display: none;"{% endif %}>
         <label class="control-label" for="input-payment-obs">Observación (Opcional):</label>
-        <input type="text" name="obs" value="{{ obs }}" placeholder="Alguna Observación que quiere que aparezca en la Factura o Boleta" id="input-payment-obs" class="form-control" maxlength="40" />
+        <input type="text" name="obs" value="{{ obs }}" placeholder="Alguna Observación que quiere que aparezca en la Factura" id="input-payment-obs" class="form-control" maxlength="40" />
         </div>		
 				]]></add>
 		</operation>
@@ -1361,8 +1361,25 @@ getContribuyente();
 });	
 				]]></add>
 		</operation>
+
 	</file>			
-	<file path="catalog/view/theme/default/template/checkout/checkout.twig">
+<file path="catalog/view/theme/default/template/checkout/shipping_address.twig">
+		<operation>
+			<search><![CDATA[<div class="buttons clearfix">]]></search>
+			<add position="replace" offset="5"><![CDATA[
+  <div class="buttons clearfix">
+    <div class="pull-right">
+      <input type="button" value="{{ button_continue }}" id="button-shipping-address" data-loading-text="{{ text_loading }}" class="btn btn-primary" />
+    </div>
+  </div>
+  <div><br />
+<font color="red">(Si prefiere retirar en una Sucursal Chilexpress, en Dirección de Envío indique el nombre y la dirección de la Sucursal que corresponda)</font>
+<br />
+<a href="http://www.chilexpress.cl/sucursales-servicio-courier-envios-carga-chile" target="_blank">Ver Sucursales</a></div>
+			]]></add>
+		</operation>
+</file>			
+<file path="catalog/view/theme/default/template/checkout/checkout.twig">
 		<operation>
 			<search index="1"><![CDATA[$('#collapse-shipping-address').parent().find('.panel-heading .panel-title').html('<a href="#collapse-shipping-address" data-toggle="collapse" data-parent="#accordion" class="accordion-toggle">{{ text_checkout_shipping_address }} <i class="fa fa-caret-down"></i></a>');]]></search>
 			<add position="replace" offset="2"><![CDATA[
