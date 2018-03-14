@@ -78,7 +78,7 @@
                             <span data-toggle="tooltip" title="Dirección web con la ubicación de la aplicación de LibreDTE">URL LibreDTE</span>
                         </label>
                         <div class="col-sm-10">
-                            <input type="text" name="module_libredte_url" value="{{ module_libredte_url }}" class="form-control" placeholder="https://libredte.sasco.cl" />
+                            <input type="text" name="module_libredte_url" value="{{ module_libredte_url }}" class="form-control" placeholder="https://libredte.cl" />
                         </div>
                     </div>
                     <div class="form-group required">
@@ -86,7 +86,7 @@
                             <span data-toggle="tooltip" title="RUT contribuyente sin puntos ni guión ni dígito verificador">RUT contribuyente</span>
                         </label>
                         <div class="col-sm-10">
-                            <input type="text" name="module_libredte_contribuyente" value="{{ module_libredte_contribuyente }}" class="form-control" placeholder="55.666.777" />
+                            <input type="text" name="module_libredte_contribuyente" value="{{ module_libredte_contribuyente }}" class="form-control" placeholder="55666777" />
                         </div>
                     </div>
                     <div class="form-group required">
@@ -109,40 +109,38 @@
                             </select>
                         </div>
                     </div>
-					
-					
-		    <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-status">{{ entry_status }}</label>
-            <div class="col-sm-10">
-              <select name="module_libredte_status" id="input-status" class="form-control">
-                {% if module_libredte_status %}
-                <option value="1" selected="selected">{{ text_enabled }}</option>
-                <option value="0">{{ text_disabled }}</option>
-                {% else %}
-                <option value="1">{{ text_enabled }}</option>
-                <option value="0" selected="selected">{{ text_disabled }}</option>
-                {% endif %}
-              </select>
-            </div>
-          </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="input-status">{{ entry_status }}</label>
+                        <div class="col-sm-10">
+                            <select name="module_libredte_status" id="input-status" class="form-control">
+{% if module_libredte_status %}
+                                <option value="1" selected="selected">{{ text_enabled }}</option>
+                                <option value="0">{{ text_disabled }}</option>
+{% else %}
+                                <option value="1">{{ text_enabled }}</option>
+                                <option value="0" selected="selected">{{ text_disabled }}</option>
+{% endif %}
+                            </select>
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>
-        <p><a href="http://libredte.cl" target="_blank">LibreDTE</a> es un proyecto de <a href="https://sasco.cl" target="_blank">SASCO SpA</a> que tiene como misión proveer de facturación electrónica libre para Chile.</p>
+        <p><a href="https://libredte.cl" target="_blank">LibreDTE</a> es un proyecto de <a href="https://sasco.cl" target="_blank">SASCO SpA</a> que tiene como misión proveer de facturación electrónica libre para Chile.</p>
     </div>
-<script type="text/javascript">
-function formulario_submit() {
-    preauth_check();
-    document.getElementById('formulario').submit();
-}
-function preauth_check() {
-    if ($('#libredte_preauth_hash').val() && $('#libredte_preauth_hash').val().length!=32) {
-        alert('Hash del usuario debe ser de 32 caracteres');
-        $('#libredte_preauth_hash').focus();
-        $('#libredte_preauth_hash').select();
-        return false;
-    }
-}
-</script>
+    <script type="text/javascript">
+        function formulario_submit() {
+            preauth_check();
+            document.getElementById('formulario').submit();
+        }
+        function preauth_check() {
+            if ($('#libredte_preauth_hash').val() && $('#libredte_preauth_hash').val().length!=32) {
+                alert('Hash del usuario debe ser de 32 caracteres');
+                $('#libredte_preauth_hash').focus();
+                $('#libredte_preauth_hash').select();
+                return false;
+            }
+        }
+    </script>
 </div>
 {{ footer }}

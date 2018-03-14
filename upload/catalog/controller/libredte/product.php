@@ -23,17 +23,9 @@
 
 /**
  * Controlador para trabajar con los productos de OpenCart
+ * @author Pablo Estremadoyro
  * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
- * @version 2016-01-23
- 
- Para configurar la lectura de códigos desde la plataforma LibreDTE, 
- estamos usando el SKU del producto.
- Se debe configurar la URL:
- http://www.mitienda.cl/index.php?route=libredte/product&codigo=
- Por ejemplo
- http://altronicschile.cl/index.php?route=libredte/product&codigo=
- 
- 
+ * @version 2018-03-07
  */
 class ControllerLibredteProduct extends Controller
 {
@@ -41,8 +33,9 @@ class ControllerLibredteProduct extends Controller
     /**
      * Acción que permite obtener los datos de un item (producto) para poder
      * consumir desde la aplicación web de LibreDTE
+     * @author Pablo Estremadoyro
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-12-02
+     * @version 2018-03-07
      */
     public function index()
     {
@@ -50,14 +43,11 @@ class ControllerLibredteProduct extends Controller
         // solo procesar si es una consulta por POST
         if ($this->request->server['REQUEST_METHOD'] == 'GET') {
             // columna que se usará para identificar al producto
-  
-         $product_code = $this->config->get('module_libredte_producto_codigo'); 
-          
-          $result = $this->db->query("SELECT `product_id` FROM `".DB_PREFIX."product` WHERE " . $product_code . " = '" . $this->request->get['codigo'] . "'");
-          if ($result->num_rows){
-          $product_id = $result->row['product_id'];
-          }
-          
+            $product_code = $this->config->get('module_libredte_producto_codigo');
+            $result = $this->db->query("SELECT `product_id` FROM `".DB_PREFIX."product` WHERE " . $this->db->escape($product_code) . " = '" . $this->db->escape($this->request->get['codigo']) . "'");
+            if ($result->num_rows) {
+                $product_id = $result->row['product_id'];
+            }
             // obtener datos del producto
             $this->load->model('catalog/product');
             $product_info = $this->model_catalog_product->getProduct($product_id);

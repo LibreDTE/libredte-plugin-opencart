@@ -23,92 +23,75 @@
 
 /**
  * Controlador para configurar la extensión Libredte
+ * @author Pablo Estremadoyro
  * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
- * @version 2016-01-26
+ * @version 2018-03-07
  */
 class ControllerExtensionModuleLibredte extends Controller
 {
-	
-	 private $error = array();
-	 
+
+    private $error = [];
+
     /**
      * Constructor del controlador
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
      * @version 2016-01-26
      */
-	 
     public function __construct($registry)
     {
         $this->registry = $registry;
         $this->registry->set('libredte', new Libredte($this->registry));
     }
-	
+
     /**
      * Acción que muestra el panel de administración de la extensión
+     * @author Pablo Estremadoyro
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-01-26
+     * @version 2018-03-07
      */
     public function index()
     {
-		
-		
-	//	$this->libredte = new libredte();
         $this->load->model('setting/setting');
-		$this->load->model('setting/module');
+        $this->load->model('setting/module');
         $this->load->language('extension/module/libredte');
         $this->document->setTitle($this->language->get('heading_title'));
-		
-		
-			if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
-			$this->model_setting_setting->editSetting('module_libredte', $this->request->post);
-
-			$this->session->data['success'] = $this->language->get('text_success');
-
-			$this->response->redirect($this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=module', true));
-		}
-
-		
-		if (isset($this->error['warning'])) {
-			$data['error_warning'] = $this->error['warning'];
-		} else {
-			$data['error_warning'] = '';
-		}
-
-	
-		$data['breadcrumbs'] = array();
-
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('text_home'),
-			'href' => $this->url->link('common/dashboard', 'user_token=' . $this->session->data['user_token'], true),
-			'separator' => false
-		);
-
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('text_extension'),
-			'href' => $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=module', true),
-			'separator' => ' :: '
-		);
-
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('heading_title'),
-			'href' => $this->url->link('extension/module/libredte', 'user_token=' . $this->session->data['user_token'], true),
-			'separator' => ' :: '
-		);
-
-		$data['action'] = $this->url->link('extension/module/libredte', 'user_token=' . $this->session->data['user_token'], true);
-
-		$data['cancel'] = $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=module', true);
-		
-		
-		
+        if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
+            $this->model_setting_setting->editSetting('module_libredte', $this->request->post);
+            $this->session->data['success'] = $this->language->get('text_success');
+            $this->response->redirect($this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=module', true));
+        }
+        if (isset($this->error['warning'])) {
+            $data['error_warning'] = $this->error['warning'];
+        } else {
+            $data['error_warning'] = '';
+        }
+        // breadcrumbs
+        $data['breadcrumbs'] = [];
+        $data['breadcrumbs'][] = [
+            'text' => $this->language->get('text_home'),
+            'href' => $this->url->link('common/dashboard', 'user_token=' . $this->session->data['user_token'], true),
+            'separator' => false
+        ];
+        $data['breadcrumbs'][] = [
+            'text' => $this->language->get('text_extension'),
+            'href' => $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=module', true),
+            'separator' => ' :: '
+        ];
+        $data['breadcrumbs'][] = [
+            'text' => $this->language->get('heading_title'),
+            'href' => $this->url->link('extension/module/libredte', 'user_token=' . $this->session->data['user_token'], true),
+            'separator' => ' :: '
+        ];
+        $data['action'] = $this->url->link('extension/module/libredte', 'user_token=' . $this->session->data['user_token'], true);
+        $data['cancel'] = $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=module', true);
         // token para enlaces
         $data['user_token'] = $this->session->data['user_token'];
         // cabecera, menú y pie de página
         $data['header'] = $this->load->controller('common/header');
         $data['column_left'] = $this->load->controller('common/column_left');
         $data['footer'] = $this->load->controller('common/footer');
-		$data['error_warning'] = '';
         // si se envío el formulario se procesa
+        $data['error_warning'] = '';
         if (!empty($this->request->post)) {
             // verificar que campos mínimos estén completos
             if (empty($this->request->post['module_libredte_url']) or empty($this->request->post['module_libredte_contribuyente']) or empty($this->request->post['module_libredte_preauth_hash'])) {
@@ -138,26 +121,8 @@ class ControllerExtensionModuleLibredte extends Controller
             $libredte_info = $this->model_setting_setting->getSetting(
                 'module_libredte', (int)$this->config->get('config_store_id')
             );
-			/*
-			if (!empty($libredte_info['module_libredte_contribuyente'])){
-            $libredte_contribuyente = $libredte_info['module_libredte_contribuyente'];
-            $libredte_info['module_libredte_contribuyente'] = number_format(
-                $libredte_info['module_libredte_contribuyente'], 0, ',', '.'
-            ).'-'.$this->libredte->dv($libredte_info['module_libredte_contribuyente']);
-			}
-			*/
-			
-			
         }
-		
-		if (empty($data['error_warning'])){
-		$data['empty_error_warning'] = true;
-		}
-		else
-		{
-		$data['empty_error_warning'] = false;	
-		}
-		
+        $data['empty_error_warning'] = empty($data['error_warning']);
         // variables para la vista
         foreach ($libredte_info as $key => $value) {
             $data[$key] = $value;
@@ -175,7 +140,7 @@ class ControllerExtensionModuleLibredte extends Controller
             'compras' => '/dte/dte_compras',
             'folios' => '/dte/admin/dte_folios',
             'firma' => '/dte/admin/firma_electronicas',
-            'contribuyente' => '/dte/contribuyentes/modificar/'.(isset($libredte_contribuyente)?$libredte_contribuyente:''),
+            'contribuyente' => '/dte/contribuyentes/modificar/'.(isset($libredte_contribuyente)?$libredte_contribuyente:''), // WARNING $libredte_contribuyente no está definido
             'perfil' => '/usuarios/perfil',
         ];
         foreach ($enlaces as $key => $enlace) {
@@ -188,9 +153,6 @@ class ControllerExtensionModuleLibredte extends Controller
                 true
             );
         }
-		
-		
-	
         // cargar vista
         $this->response->setOutput($this->load->view('extension/module/libredte', $data));
     }
@@ -198,8 +160,9 @@ class ControllerExtensionModuleLibredte extends Controller
     /**
      * Acción para dirigir al usuario a una página en la aplicación de LibreDTE
      * Utiliza preautenticación y selecciona automáticamente al contribuyente
+     * @author Pablo Estremadoyro
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-01-26
+     * @version 2018-03-07
      */
     public function go()
     {
@@ -218,72 +181,84 @@ class ControllerExtensionModuleLibredte extends Controller
         else {
             $this->load->language('error/not_found');
             $this->document->setTitle($this->language->get('heading_title'));
-            $data['breadcrumbs'] = array();
-            $data['breadcrumbs'][] = array(
+            $data['breadcrumbs'] = [];
+            $data['breadcrumbs'][] = [
                 'text' => $this->language->get('text_home'),
                 'href' => $this->url->link('common/dashboard', 'user_token=' . $this->session->data['user_token'], true)
-            );
-					$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('text_extension'),
-			'href' => $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=module', true)
-			);
-
-		if (!isset($this->request->get['module_id'])) {
-			$data['breadcrumbs'][] = array(
-				'text' => $this->language->get('heading_title'),
-				'href' => $this->url->link('extension/module/libredte', 'user_token=' . $this->session->data['user_token'], true)
-			);
-		} else {
-			$data['breadcrumbs'][] = array(
-				'text' => $this->language->get('heading_title'),
-				'href' => $this->url->link('extension/module/libredte', 'user_token=' . $this->session->data['user_token'] . '&module_id=' . $this->request->get['module_id'], true)
-			);
-		}
- 
+            ];
+            $data['breadcrumbs'][] = [
+                'text' => $this->language->get('text_extension'),
+                'href' => $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=module', true)
+            ];
+            if (!isset($this->request->get['module_id'])) {
+                $data['breadcrumbs'][] = [
+                    'text' => $this->language->get('heading_title'),
+                    'href' => $this->url->link('extension/module/libredte', 'user_token=' . $this->session->data['user_token'], true)
+                ];
+            } else {
+                $data['breadcrumbs'][] = [
+                    'text' => $this->language->get('heading_title'),
+                    'href' => $this->url->link('extension/module/libredte', 'user_token=' . $this->session->data['user_token'] . '&module_id=' . $this->request->get['module_id'], true)
+                ];
+            }
             $data['header'] = $this->load->controller('common/header');
             $data['column_left'] = $this->load->controller('common/column_left');
             $data['footer'] = $this->load->controller('common/footer');
             $this->response->setOutput($this->load->view('error/not_found', $data));
         }
     }
-	
-    public function install() {
-		      $this->load->model('setting/setting');
-		$this->model_setting_setting->editSetting('module_libredte', array("module_libredte_status" => 1));
 
-		$query_create = "
-					CREATE TABLE IF NOT EXISTS `".DB_PREFIX."libredte` (
-					  `order_id` int(11),
-					  `boletaofactura` VARCHAR(10),
-					  `rut` VARCHAR(15),
-                      `rsocial` VARCHAR(50),
-					  `giro` VARCHAR(50),
-					  `oc` VARCHAR(50),
-					  `fecha_oc` VARCHAR(12),
-					  `obs` VARCHAR(50),
-                      `linkpdf` VARCHAR(100),
-                      `linkxml` VARCHAR(100),
-					  `mail_sent` TINYINT(1),
-					PRIMARY KEY (`order_id`)
-					)";
-	    $this->db->query($query_create);
-		
+    /**
+     * Método que se ejecuta al instalar la extensión
+     * @author Pablo Estremadoyro
+     * @version 2018-03-07
+     */
+    public function install()
+    {
+        $this->load->model('setting/setting');
+        $this->model_setting_setting->editSetting('module_libredte', ['module_libredte_status' => 1]);
+        $query_create = "
+            CREATE TABLE IF NOT EXISTS `".DB_PREFIX."libredte` (
+                `order_id` int(11),
+                `boletaofactura` VARCHAR(10),
+                `rut` VARCHAR(15),
+                `rsocial` VARCHAR(50),
+                `giro` VARCHAR(50),
+                `oc` VARCHAR(50),
+                `fecha_oc` VARCHAR(12),
+                `obs` VARCHAR(50),
+                `linkpdf` VARCHAR(100),
+                `linkxml` VARCHAR(100),
+                `mail_sent` TINYINT(1),
+                PRIMARY KEY (`order_id`)
+            )
+        ";
+        $this->db->query($query_create);
     }
 
-    public function uninstall() {
-         $this->load->model('setting/setting');
+    /**
+     * Método que se ejecuta al desinstalar la extensión
+     * @author Pablo Estremadoyro
+     * @version 2018-03-07
+     */
+    public function uninstall()
+    {
+        $this->load->model('setting/setting');
         $this->model_setting_setting->deleteSetting('module_libredte');
-		$this->db->query("DROP TABLE IF EXISTS `".DB_PREFIX."libredte`");
+        $this->db->query("DROP TABLE IF EXISTS `".DB_PREFIX."libredte`");
     }
 
+    /**
+     * Método que verifica los permisos del usuario sobre la extensión
+     * @author Pablo Estremadoyro
+     * @version 2018-03-07
+     */
+    protected function validate()
+    {
+        if (!$this->user->hasPermission('modify', 'extension/module/libredte')) {
+            $this->error['warning'] = $this->language->get('error_permission');
+        }
+        return !$this->error;
+    }
 
-	protected function validate() {
-		if (!$this->user->hasPermission('modify', 'extension/module/libredte')) {
-			$this->error['warning'] = $this->language->get('error_permission');
-		}
-
-		return !$this->error;
-	}	
-	
-	
 }
