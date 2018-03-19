@@ -145,7 +145,7 @@ class ModelExtensionLibredteOrder extends Model
        }  
         
        }
-       $coupon = abs($coupon);
+       
       
       
         $this->load->model('setting/setting');
@@ -168,14 +168,26 @@ class ModelExtensionLibredteOrder extends Model
          
          
        $boletaofactura = $result->row['boletaofactura'];
-       if (($boletaofactura == 'factura') && ($shipping > 0)){
-       $shipping = round($shipping / 1.19);
+	    
+	   if ( abs($coupon) > 0){
+	   if (($boletaofactura == 'factura')){
+       $coupon = abs($coupon);
        } 
        else
        {
+       $coupon = round(abs($coupon) * 1.19);
+       } 
+	   }
+
+		if ($shipping > 0){
+	   if ($boletaofactura == 'factura'){
        $shipping = round($shipping);
        } 
-           
+       else
+       {
+       $shipping = round($shipping * 1.19);
+       } 
+		}  
          
        if ($boletaofactura == 'boleta'){
        $TipoDTE = 39;
@@ -242,11 +254,11 @@ class ModelExtensionLibredteOrder extends Model
             }
           
           
-          // En el caso de la boleta el precio llega tal cual al sistema de LibreDTE
-          // pero en el caso de la factura le quitamos el IVA
+          // En el caso de la factura el precio llega tal cual al sistema de LibreDTE
+          // pero en el caso de la boleta le agregamos el IVA
           
-          if ($boletaofactura == 'factura'){
-          $price = $price / 1.19;
+          if ($boletaofactura == 'boleta'){
+          $price = round($price * 1.19);
           }
           
      
@@ -255,7 +267,7 @@ class ModelExtensionLibredteOrder extends Model
                     'TpoCodigo' => 'INT1',
                     'VlrCodigo' => substr($product_info[$product_code], 0, 35),
                 ] : false,
-                'IndExe' => $product_info['tax_class_id'] ? false : false,
+                'IndExe' => $product_info['tax_class_id'] ? false : 1,
                 'NmbItem' => substr($product['name'], 0, 80),
                 'DscItem' => '',
                 'QtyItem' => $product['quantity'],
@@ -291,7 +303,7 @@ class ModelExtensionLibredteOrder extends Model
                 'NroLinDR' => 1,
                 'TpoMov' => 'D',
                 'TpoValor' => '$',
-                'ValorDR' => abs(round($coupon / 1.19))
+                'ValorDR' => $coupon
             ];
       }
             

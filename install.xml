@@ -226,6 +226,7 @@
 		}
 		else
 		{
+		$data['text_tipodte'] = 'DTE';
 		$data['title'] = sprintf('Envío DTE %s Orden %d - Documento Electrónico N° %d', $order_info['store_name'], $order_info['order_id'], $order_info['invoice_no']);	
 		}
 		$data['text_greeting'] = sprintf('Muchas gracias por su compra en la tienda de %s', $order_info['store_name']);
@@ -477,7 +478,7 @@ $_['error_rsocial']           	     = 'La Razón Social debe tener entre 5 y 50 
 		</div>
 		<div class="form-group" id="datos-facturacion-obs" {% if boletaofactura == 'boleta' %}style="display: none;"{% endif %}>
         <label class="control-label" for="input-payment-obs">Observación (Opcional):</label>
-        <input type="text" name="obs" value="{{ obs }}" placeholder="Alguna Observación que quiere que aparezca en la Factura" id="input-payment-obs" class="form-control" maxlength="40" />
+        <input type="text" name="obs" value="{{ obs }}" placeholder="Alguna Observación que quiere que aparezca en la Factura" id="input-payment-obs" class="form-control" maxlength="60" />
         </div>
 
 		
@@ -1061,7 +1062,7 @@ $(document).delegate('#button-email', 'click', function() {
 		<div class="form-group" id="datos-facturacion-obs" {% if boletaofactura == 'boleta' %}style="display: none;"{% endif %}>
         <div class="col-sm-10">
 		<label class="control-label" for="input-payment-obs">Observación (Opcional):</label>
-        <input type="text" name="obs" value="{{ obs }}" placeholder="Alguna Observación que quiere que aparezca en la Factura" id="input-payment-obs" class="form-control" maxlength="40" />
+        <input type="text" name="obs" value="{{ obs }}" placeholder="Alguna Observación que quiere que aparezca en la Factura" id="input-payment-obs" class="form-control" maxlength="60" />
 		</div>
         </div>		
 				]]></add>
