@@ -198,7 +198,7 @@ class ModelExtensionLibredteOrder extends Model
        } 
      
        if ($boletaofactura == 'boleta'){
-       if (empty($rut)){
+       if (empty($rut) || empty($rsocial)){
        $rut = '66666666-6';
        }
        if (empty($giro)){
