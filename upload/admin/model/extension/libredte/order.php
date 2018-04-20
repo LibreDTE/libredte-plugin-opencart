@@ -125,7 +125,7 @@ class ModelExtensionLibredteOrder extends Model
         $order_info = $this->model_sale_order->getOrder($order_id);
         if (!$order_info){
         $fp = fopen("libredte.log", "a+");
-		fputs($fp,"Que Raro, no se pudo obtener la informacion de la orden: \n la Factura tiene numero: " . $order_info['invoice_no']);
+		fputs($fp,"No se pudo obtener la informacion de la orden: \n la Factura tiene numero: " . $order_info['invoice_no']);
         //fputs($fp, $order_id . " \n");
         fclose($fp);  
             return false;
@@ -344,7 +344,7 @@ if ($coupon){
                     'Contacto' => substr($order_info['telephone'], 0, 80),
                     'CorreoRecep' => substr($order_info['email'], 0, 80),
                     'DirRecep' => substr($order_info['payment_address_1'].(!empty($order_info['payment_address_2'])?(', '.$order_info['payment_address_2']):''), 0, 70),
-                    'CmnaRecep' => substr($order_info['payment_city'], 0, 20),
+                    'CmnaRecep' => substr($order_info['payment_zone'], 0, 20),
                 ],
             ],
             'Detalle' => $Detalle,
@@ -380,7 +380,7 @@ if ($coupon){
                     'Contacto' => substr($order_info['telephone'], 0, 80),
                     'CorreoRecep' => substr($order_info['email'], 0, 80),
                     'DirRecep' => substr($order_info['payment_address_1'].(!empty($order_info['payment_address_2'])?(', '.$order_info['payment_address_2']):''), 0, 70),
-                    'CmnaRecep' => substr($order_info['payment_city'], 0, 20),
+                    'CmnaRecep' => substr($order_info['payment_zone'], 0, 20),
                 ],
             ],
             'Detalle' => $Detalle,
@@ -416,7 +416,7 @@ else
                     'Contacto' => substr($order_info['telephone'], 0, 80),
                     'CorreoRecep' => substr($order_info['email'], 0, 80),
                     'DirRecep' => substr($order_info['payment_address_1'].(!empty($order_info['payment_address_2'])?(', '.$order_info['payment_address_2']):''), 0, 70),
-                    'CmnaRecep' => substr($order_info['payment_city'], 0, 20),
+                    'CmnaRecep' => substr($order_info['payment_zone'], 0, 20),
                 ],
             ],
             'Detalle' => $Detalle,
@@ -451,7 +451,7 @@ else
                     'Contacto' => substr($order_info['telephone'], 0, 80),
                     'CorreoRecep' => substr($order_info['email'], 0, 80),
                     'DirRecep' => substr($order_info['payment_address_1'].(!empty($order_info['payment_address_2'])?(', '.$order_info['payment_address_2']):''), 0, 70),
-                    'CmnaRecep' => substr($order_info['payment_city'], 0, 20),
+                    'CmnaRecep' => substr($order_info['payment_zone'], 0, 20),
                 ],
             ],
             'Detalle' => $Detalle,
