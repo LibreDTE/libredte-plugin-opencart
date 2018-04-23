@@ -226,6 +226,7 @@
 		}
 		else
 		{
+		$data['text_tipodte'] = 'DTE';
 		$data['title'] = sprintf('Envío DTE %s Orden %d - Documento Electrónico N° %d', $order_info['store_name'], $order_info['order_id'], $order_info['invoice_no']);	
 		}
 		$data['text_greeting'] = sprintf('Muchas gracias por su compra en la tienda de %s', $order_info['store_name']);
@@ -477,7 +478,7 @@ $_['error_rsocial']           	     = 'La Razón Social debe tener entre 5 y 50 
 		</div>
 		<div class="form-group" id="datos-facturacion-obs" {% if boletaofactura == 'boleta' %}style="display: none;"{% endif %}>
         <label class="control-label" for="input-payment-obs">Observación (Opcional):</label>
-        <input type="text" name="obs" value="{{ obs }}" placeholder="Alguna Observación que quiere que aparezca en la Factura" id="input-payment-obs" class="form-control" maxlength="40" />
+        <input type="text" name="obs" value="{{ obs }}" placeholder="Alguna Observación que quiere que aparezca en la Factura" id="input-payment-obs" class="form-control" maxlength="60" />
         </div>
 
 		
@@ -1007,15 +1008,15 @@ $(document).delegate('#button-email', 'click', function() {
   
 
    		<div class="form-group required">
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label class="control-label"><b>¿Necesita Boleta o Factura?</b></label>
+		<label class="control-label"><b>¿Necesita Boleta o Factura?</b></label>
 		<div class="radio">
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label>
+        <label>
         <input type="radio" name="boletaofactura" value="boleta" {% if boletaofactura == 'boleta' %}checked="checked"{% endif %} />
 		Boleta
 		</label>
         </div>
 		<div class="radio">
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label>
+        <label>
         <input type="radio" name="boletaofactura" value="factura" {% if boletaofactura == 'factura' %}checked="checked"{% endif %} />
 		Factura
 		</label>
@@ -1023,22 +1024,28 @@ $(document).delegate('#button-email', 'click', function() {
 		</div>
 		
 		<div class="form-group" id="datos-facturacion-rut">
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label class="control-label" for="input-payment-rut">RUT del Receptor</label>
-        <input type="text" name="rut" value="{{ rut }}" placeholder="Rut del receptor - opcional" id="input-payment-rut" class="form-control" />
+        <div class="col-sm-10">
+		<label class="control-label" for="input-payment-rut">RUT del Receptor</label>
+		<input type="text" name="rut" value="{{ rut }}" placeholder="Rut del receptor - opcional" id="input-payment-rut" class="form-control" />
+		</div>
         </div>
 		
 		<div class="form-group" id="datos-facturacion-razon-social">
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label class="control-label" for="input-payment-rsocial">Razón Social</label>
+		<div class="col-sm-10">
+        <label class="control-label" for="input-payment-rsocial">Razón Social</label>
         <input type="text" name="rsocial" value="{{ rsocial }}" placeholder="Razón Social del Receptor - Opcional" id="input-payment-rsocial" class="form-control" maxlength="50" />
+		</div>
         </div>
 		
 		<div class="form-group" id="datos-facturacion-giro">
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label class="control-label" for="input-payment-giro">Giro</label>
+		<div class="col-sm-10">
+        <label class="control-label" for="input-payment-giro">Giro</label>
         <input type="text" name="giro" value="{{ giro }}" placeholder="Giro - Opcional" id="input-payment-giro" class="form-control" maxlength="40" />
         </div>
+		</div>
 		
 		<div class="form-group required" id="datos-facturacion-oc" {% if boletaofactura == 'boleta' %}style="display: none;"{% endif %}>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Orden de Compra y Fecha (Opcional)
+		Orden de Compra y Fecha (Opcional)
 		<div class="row form-group">
 		<div class="form-group col-xs-10 col-sm-2">
 		<input type="text" name="oc" value="{{ oc }}" placeholder="Orden de Compra - Opcional" id="input-payment-oc" class="form-control" />
@@ -1053,8 +1060,10 @@ $(document).delegate('#button-email', 'click', function() {
 		</div>
 		
 		<div class="form-group" id="datos-facturacion-obs" {% if boletaofactura == 'boleta' %}style="display: none;"{% endif %}>
-        <label class="control-label" for="input-payment-obs">Observación (Opcional):</label>
-        <input type="text" name="obs" value="{{ obs }}" placeholder="Alguna Observación que quiere que aparezca en la Factura" id="input-payment-obs" class="form-control" maxlength="40" />
+        <div class="col-sm-10">
+		<label class="control-label" for="input-payment-obs">Observación (Opcional):</label>
+        <input type="text" name="obs" value="{{ obs }}" placeholder="Alguna Observación que quiere que aparezca en la Factura" id="input-payment-obs" class="form-control" maxlength="60" />
+		</div>
         </div>		
 				]]></add>
 		</operation>
