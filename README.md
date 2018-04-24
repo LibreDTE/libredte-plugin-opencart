@@ -41,15 +41,13 @@ Contribuir al proyecto
 ----------------------
 
 Si deseas contribuir con el proyecto, especialmente resolviendo alguna de las
-[*issues* abiertas](https://github.com/LibreDTE/libredte-plugin-opencart/issues) o creando nuevos
-[ejemplos](https://github.com/LibreDTE/libredte-plugin-opencart/tree/master/examples) sobre el
-uso de la biblioteca, debes:
+[*issues* abiertas](https://github.com/LibreDTE/libredte-plugin-opencart/issues) debes:
 
 1. Hacer fork del proyecto en [GitHub](https://github.com/LibreDTE/libredte-plugin-opencart)
 2. Crear una *branch* para los cambios: git checkout -b nombre-branch
 3. Modificar código: git commit -am 'Se agrega...'
 4. Publicar cambios: git push origin nombre-branch
-5. Crear un *pull request* para unir la nueva *branch* con LibreDTE.
+5. Crear un *pull request* para unir la nueva *branch* con esta versión oficial.
 
 **IMPORTANTE**: antes de hacer un *pull request* verificar que el código
 cumpla con los estándares [PSR-1](http://www.php-fig.org/psr/psr-1),
