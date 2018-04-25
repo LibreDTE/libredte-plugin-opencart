@@ -57,7 +57,6 @@ class ModelExtensionLibredteOrder extends Model
         $libredte_info = $this->model_setting_setting->getSetting(
             'module_libredte', $order_info['store_id']
         );
-        $libredte_info['module_libredte_log'] = true; // TODO mover esto a configuración del módulo
         // crear datos del DTE
         $dte = $this->getDte($order_id);
         if (!$dte) {
