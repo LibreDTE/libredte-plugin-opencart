@@ -35,3 +35,4 @@ $_['heading_title']        = 'LibreDTE';
 $_['text_success']         = 'Se ha guardado la configuración de la extensión';
 $_['text_extension']       = 'Extensiones';
 $_['entry_status']         = 'Estado';
+$_['entry_log']         = 'Modo Debug';
