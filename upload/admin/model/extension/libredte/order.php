@@ -120,7 +120,7 @@ class ModelExtensionLibredteOrder extends Model
             return false;
         }
            
-        $libredte_info['module_libredte_log'] = true; // TODO mover esto a configuración del módulo
+        //$libredte_info['module_libredte_log'] = true; // TODO mover esto a configuración del módulo
         // se obtiene el valor del despacho o descuento, si es que existe
         $shipping = 0;
         $coupon = 0;
@@ -134,6 +134,13 @@ class ModelExtensionLibredteOrder extends Model
             }
         }
         $coupon = abs($coupon);
+		
+		
+		$this->load->model('setting/setting');
+        $libredte_info = $this->model_setting_setting->getSetting(
+            'module_libredte', $order_info['store_id']
+        );
+		
         // obtener datos de la orden
         $result = $this->db->query('SELECT * FROM `'.DB_PREFIX.'libredte` WHERE order_id = ' . (int)$order_id);
         if ($result->num_rows) {
@@ -146,12 +153,14 @@ class ModelExtensionLibredteOrder extends Model
             if (empty($fecha_oc)) {
                 $fecha_oc = date('Y-m-d');
             }
-            $TipoDTE = $result->row['boletaofactura'] == 'boleta' ? 39 : 33;
+			$boletaofactura = $result->row['boletaofactura'];
+            $TipoDTE = $boletaofactura == 'boleta' ? 39 : 33;
             if (($TipoDTE == 33) && ($shipping > 0)) {
-                $shipping = round($shipping / 1.19);
-            } else {
                 $shipping = round($shipping);
-            }
+            } 
+			if (($TipoDTE == 39) && ($shipping > 0)) {
+                $shipping = round($shipping * 1.19);
+            } 			
             if ($TipoDTE == 39) {
                 if (empty($rut)) {
                     $rut = '66666666-6';
