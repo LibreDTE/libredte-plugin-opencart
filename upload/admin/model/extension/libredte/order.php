@@ -119,8 +119,6 @@ class ModelExtensionLibredteOrder extends Model
         fclose($fp);  
             return false;
         }
-           
-        //$libredte_info['module_libredte_log'] = true; // TODO mover esto a configuración del módulo
         // se obtiene el valor del despacho o descuento, si es que existe
         $shipping = 0;
         $coupon = 0;
@@ -154,6 +152,9 @@ class ModelExtensionLibredteOrder extends Model
                 $fecha_oc = date('Y-m-d');
             }
 			$boletaofactura = $result->row['boletaofactura'];
+			if (($coupon > 0) && ($boletaofactura == 'boleta')){
+			$coupon = round($coupon * 1.19);
+			}
             $TipoDTE = $boletaofactura == 'boleta' ? 39 : 33;
             if (($TipoDTE == 33) && ($shipping > 0)) {
                 $shipping = round($shipping);
