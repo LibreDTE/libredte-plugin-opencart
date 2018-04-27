@@ -33,6 +33,6 @@ Para configurar la lectura de códigos desde la plataforma LibreDTE, por ejemplo
 
 Por ejemplo:
 
-    http://altronicschile.cl/index.php?route=libredte/product&codigo=
+    https://altronics.cl/index.php?route=libredte/product&codigo=
 
 La columna a usar, en este caso el ejemplo se indica SKU, se asigna en la configuración del plugin en OpenCart.
