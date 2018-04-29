@@ -163,7 +163,7 @@ class ModelExtensionLibredteOrder extends Model
                 $shipping = round($shipping * 1.19);
             } 			
             if ($TipoDTE == 39) {
-                if (empty($rut)) {
+                if (empty($rut) || empty($rsocial)) {
                     $rut = '66666666-6';
                 }
                 if (empty($giro)) {
