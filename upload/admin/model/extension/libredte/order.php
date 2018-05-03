@@ -144,7 +144,7 @@ class ModelExtensionLibredteOrder extends Model
         if ($result->num_rows) {
             $rut = $result->row['rut'];
             $giro = $result->row['giro'];
-            $rsocial = $result->row['rsocial'];
+            $rsocial = trim($result->row['rsocial']);
             $obs = $result->row['obs'];
             $oc = $result->row['oc'];
             $fecha_oc = $result->row['fecha_oc'];
@@ -163,7 +163,7 @@ class ModelExtensionLibredteOrder extends Model
                 $shipping = round($shipping * 1.19);
             } 			
             if ($TipoDTE == 39) {
-                if (empty($rut)) {
+                if (empty($rut) || empty($rsocial)) {
                     $rut = '66666666-6';
                 }
                 if (empty($giro)) {
