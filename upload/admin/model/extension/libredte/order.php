@@ -144,7 +144,8 @@ class ModelExtensionLibredteOrder extends Model
         if ($result->num_rows) {
             $rut = $result->row['rut'];
             $giro = $result->row['giro'];
-            $rsocial = trim($result->row['rsocial']);
+            $rsocial = $result->row['rsocial'];
+			$rsocial = trim($rsocial);
             $obs = $result->row['obs'];
             $oc = $result->row['oc'];
             $fecha_oc = $result->row['fecha_oc'];

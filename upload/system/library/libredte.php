@@ -76,7 +76,8 @@ class Libredte
         if (!strpos($rut, '-'))
             return false;
         list($rut, $dv) = explode('-', str_replace('.', '', $rut));
-        if (!is_numeric($rut) or !is_numeric($dv))
+		$dv = strtoupper($dv);
+        if (!is_numeric($rut))
             return false;
         $real_dv = $this->dv($rut);
         return $dv == $real_dv ? $rut : false;
@@ -96,7 +97,15 @@ class Libredte
         $s=1;
         for ($m=0;$r!=0;$r/=10)
             $s=($s+$r%10*(9-$m++%6))%11;
-        return strtoupper(chr($s?$s+47:75));
+		$dv = strtoupper(chr($s?$s+47:75));
+		if ($dv == 0)
+		{	
+        return 'K';
+		}
+		else
+		{
+		return $dv;	
+		}	
     }
 
 }
