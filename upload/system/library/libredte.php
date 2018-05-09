@@ -92,20 +92,17 @@ class Libredte
      */
     public function dv($r)
     {
-        $r = str_replace('.', '', $r);
-        $r = str_replace(',', '', $r);
-        $s=1;
-        for ($m=0;$r!=0;$r/=10)
-            $s=($s+$r%10*(9-$m++%6))%11;
-		$dv = strtoupper(chr($s?$s+47:75));
-		if ($dv == 0)
-		{	
-        return 'K';
-		}
-		else
-		{
-		return $dv;	
-		}	
+    $r = str_replace('.', '', $r);
+    $r = str_replace(',', '', $r);
+	$factor = 2;
+    $suma = 0;
+    for($i = strlen($r) - 1; $i >= 0; $i--) {
+        $suma += $factor * $r[$i];
+        $factor = $factor % 7 == 0 ? 2 : $factor + 1;
+    }
+    $dv = 11 - $suma % 11;
+    $dv = $dv == 11 ? 0 : ($dv == 10 ? "K" : $dv);
+    return $dv;
     }
 
 }
