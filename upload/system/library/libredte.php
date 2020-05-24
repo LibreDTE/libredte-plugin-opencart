@@ -76,7 +76,8 @@ class Libredte
         if (!strpos($rut, '-'))
             return false;
         list($rut, $dv) = explode('-', str_replace('.', '', $rut));
-        if (!is_numeric($rut) or !is_numeric($dv))
+		$dv = strtoupper($dv);
+        if (!is_numeric($rut))
             return false;
         $real_dv = $this->dv($rut);
         return $dv == $real_dv ? $rut : false;
@@ -91,12 +92,17 @@ class Libredte
      */
     public function dv($r)
     {
-        $r = str_replace('.', '', $r);
-        $r = str_replace(',', '', $r);
-        $s=1;
-        for ($m=0;$r!=0;$r/=10)
-            $s=($s+$r%10*(9-$m++%6))%11;
-        return strtoupper(chr($s?$s+47:75));
+    $r = str_replace('.', '', $r);
+    $r = str_replace(',', '', $r);
+	$factor = 2;
+    $suma = 0;
+    for($i = strlen($r) - 1; $i >= 0; $i--) {
+        $suma += $factor * $r[$i];
+        $factor = $factor % 7 == 0 ? 2 : $factor + 1;
+    }
+    $dv = 11 - $suma % 11;
+    $dv = $dv == 11 ? 0 : ($dv == 10 ? "K" : $dv);
+    return $dv;
     }
 
 }
